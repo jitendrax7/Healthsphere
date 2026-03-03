@@ -5,9 +5,12 @@ import sendEmail from "../utils/sendEmail.js";
 
 
 
-const generateToken = (userId) => {
+const generateToken = (user) => {
   return jwt.sign(
-    { id: userId },
+    {
+      id: user._id,
+      role: user.role
+    },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
@@ -21,9 +24,9 @@ const generateOTP = () => {
 
 export const registerUser = async (req, res) => {
   try {
-    const { Name, email, password } = req.body;
+    const { Name, email, password, role, phoneNumber } = req.body;
 
-    if (!Name || !email || !password) {
+    if (!Name || !email || !password || !role || !phoneNumber) {
       return res.status(400).json({
         message: "All fields are required"
       });
@@ -44,10 +47,13 @@ export const registerUser = async (req, res) => {
     // Generate OTP
     const otp = generateOTP();
 
+    console.log("Generated OTP for", email, ":", otp); // For testing purposes, log the OTP
     const user = await User.create({
       Name,
-      email,
+      email, 
       password: hashedPassword,
+      role: role === "doctor" ? "doctor" : "user",
+      phoneNumber,
       otp,
       otpExpire: Date.now() + 10 * 60 * 1000, // 10 minutes
       isVerified: false
@@ -61,7 +67,7 @@ export const registerUser = async (req, res) => {
     );
 
     res.status(201).json({
-        "otp_sent": true,
+      "otp_sent": true,
       message: "Registered successfully. Please verify your email.",
       email: user.email
     });
@@ -119,9 +125,15 @@ export const verifyEmail = async (req, res) => {
     await user.save();
 
     res.status(200).json({
-        "otp_sent": false,
+      "otp_sent": false,
       message: "Email verified successfully",
-      token: generateToken(user._id)
+      token: generateToken(user),
+      user: {
+        id: user._id,
+        Name: user.Name,
+        email: user.email,
+        role: user.role
+      }
     });
 
   } catch (error) {
@@ -182,13 +194,14 @@ export const loginUser = async (req, res) => {
     }
 
     res.status(200).json({
-        "otp_sent": false,
+      "otp_sent": false,
       message: "Login successful",
       token: generateToken(user._id),
       user: {
         id: user._id,
         Name: user.Name,
-        email: user.email
+        email: user.email,
+        role: user.role
       }
     });
 
@@ -199,3 +212,25 @@ export const loginUser = async (req, res) => {
     });
   }
 };
+
+
+
+export const getUserStatus = async (req, res) => {
+  try {
+    res.status(200).json({
+      isLoggedIn: true,
+      user: {
+        id: req.user._id,
+        role: req.user.role,
+        Name: req.user.Name,
+        email: req.user.email,
+        profilePhoto: "https://tse1.explicit.bing.net/th/id/OIP.eOwuD0szBt89gR5aPcjL5wHaHa?w=1920&h=1920&rs=1&pid=ImgDetMain&o=7&rm=3"  // for now 
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server Error",
+      error: error.message
+    });
+  }
+}; 

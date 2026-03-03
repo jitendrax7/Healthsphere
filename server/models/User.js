@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 
-const  userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   Name: {
     type: String,
     required: true
@@ -20,14 +20,20 @@ const  userSchema = new mongoose.Schema({
   phoneNumber: {
     type: String
   },
-
   
+  location: {
+    city: String,
+    latitude: Number,
+    longitude: Number
+  },
+
+
   role: {
     type: String,
     enum: ["user", "doctor"],
     default: "user"
   },
-  
+
   accountStatus: {
     type: String,
     enum: ["active", "suspended", "banned", "deactivated"],
