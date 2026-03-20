@@ -34,6 +34,11 @@ const userSchema = new mongoose.Schema({
     default: "user"
   },
 
+  profilePhoto:{
+    type: String,
+    default: "https://tse1.explicit.bing.net/th/id/OIP.eOwuD0szBt89gR5aPcjL5wHaHa?w=1920&h=1920&rs=1&pid=ImgDetMain&o=7&rm=3"
+  },
+
   accountStatus: {
     type: String,
     enum: ["active", "suspended", "banned", "deactivated"],
