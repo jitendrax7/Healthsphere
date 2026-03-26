@@ -56,8 +56,6 @@ export const createOrUpdateDoctorProfile = async (req, res) => {
       profile.availableTime?.startTime &&
       profile.availableTime?.endTime;
 
-    profile.isBookingEnabled = !!isComplete;
-
     await profile.save();
     res.status(200).json({
       message: profile.isNew
