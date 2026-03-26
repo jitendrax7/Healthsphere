@@ -19,7 +19,6 @@ export const createOrUpdateDoctorProfile = async (req, res) => {
       clinicLocation
     } = req.body;
 
-    const user = await User.findById(userId);
 
     let profile = await DoctorProfile.findOne({ user: userId });
 
@@ -147,6 +146,22 @@ export const toggleDoctorBooking = async (req, res) => {
     if (!profile) {
       return res.status(404).json({
         message: "Doctor profile not found"
+      });
+    }
+
+    const user = await User.findById(userId);
+
+    if(!user.isVerified || user.accountStatus !== "active") {
+      return res.status(403).json({
+        success:false,
+        message: "Account must be verified and active to enable booking."
+      });
+    }
+
+    if(!user.profilePhoto) {
+      return res.status(403).json({
+        success:false,
+        message: "Profile photo required to enable booking."
       });
     }
 
