@@ -1,5 +1,5 @@
 import UserHealthProfile from "../../models/UserHealthProfile.js";
-import UserSetting from "../../models/userSetting.js";
+import UserSetting from "../../models/UserSetting.js";
 
 
 export const setupUserAccount = async (userId) => {
