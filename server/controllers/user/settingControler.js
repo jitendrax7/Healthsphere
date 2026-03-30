@@ -1,4 +1,4 @@
-import UserSetting from "../../models/userSetting.js";
+import UserSetting from "../../models/UserSetting.js";
 
 
 

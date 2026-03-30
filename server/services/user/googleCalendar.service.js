@@ -1,7 +1,7 @@
 import { google } from "googleapis";
 import jwt from "jsonwebtoken";
 import { oauth2Client } from "../../config/googleOAuth.js";
-import UserSetting from "../../models/userSetting.js";
+import UserSetting from "../../models/UserSetting.js";
 
 
 export const getGoogleAuthURL = (userId) => {
