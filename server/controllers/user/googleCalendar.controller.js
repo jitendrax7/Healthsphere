@@ -32,7 +32,7 @@ export const googleCallback = async (req, res) => {
             );
 
             res.redirect(
-                "http://localhost:5173/user/settings?tab=notifications#integrations"
+                "https://healthsphere-jit.vercel.app/user/settings?tab=notifications#integrations"
             );
         }  
         catch (error) {
