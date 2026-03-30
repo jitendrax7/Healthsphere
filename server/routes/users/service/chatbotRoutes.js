@@ -1,9 +1,8 @@
 import express from "express";
-import { chatWithAI } from "../../../controllers/user/chatController";
-import { protect } from "../../../middleware/authMiddleware";
+import { chatWithAI } from "../../../controllers/user/chatController.js";
 
 const chatbotRoutes = express.Router();
 
-chatbotRoutes.post("/chat", protect, chatWithAI);
+chatbotRoutes.post("/chat", chatWithAI);
 
 export default chatbotRoutes;

@@ -1,16 +1,19 @@
 import express from "express";
-import { authorizeRoles, protect } from "../../../middleware/authMiddleware";
-import { getDoctorAppointments, updateAppointmentStatus } from "../../../controllers/docter/appointmentController";
+import { getDoctorAnalytics, getDoctorAppointmentDetails, getDoctorAppointmentHistory, getDoctorAppointments, updateAppointmentStatus } from "../../../controllers/docter/appointmentController.js";
 
 
 const appointmentRoutes = express.Router();
 
 
-// Doctor views appointments
-appointmentRoutes.get("/myappointment", protect, authorizeRoles("doctor"), getDoctorAppointments);
 
-// Doctor updates status
-appointmentRoutes.put("/appointment/:appointmentId", protect, authorizeRoles("doctor"), updateAppointmentStatus);
+appointmentRoutes.get("/getAnalytics", getDoctorAnalytics);
+appointmentRoutes.get("/myappointments",  getDoctorAppointments);
+appointmentRoutes.get("/myappointments/:appointmentId",  getDoctorAppointmentDetails);
+appointmentRoutes.get("/History",  getDoctorAppointmentHistory);
+appointmentRoutes.get("/History/:appointmentId",  getDoctorAppointmentDetails);
 
 
-export default appointmentRoutes;
+appointmentRoutes.put("/stuatus/:appointmentId", updateAppointmentStatus);
+
+
+export default appointmentRoutes;  

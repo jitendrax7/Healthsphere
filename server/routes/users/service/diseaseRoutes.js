@@ -1,18 +1,17 @@
 import express from "express";
-import { protect } from "../../../middleware/authMiddleware";
-import { getDiabetesData, getHeartData, getUserPredictionHistory, predictDiabetes, predictHeart } from "../../../controllers/user/diseaseController";
+import { getDiabetesData, getHeartData, getUserPredictionHistory, predictDiabetes, predictHeart } from "../../../controllers/user/diseaseController.js";
 
 const diseaseRoutes = express.Router();
 
 // Diabetes
-diseaseRoutes.get("/diabetes-data", protect, getDiabetesData);
-diseaseRoutes.post("/diabetes-predict", protect, predictDiabetes);
+diseaseRoutes.get("/diabetes-data", getDiabetesData);
+diseaseRoutes.post("/diabetes-predict", predictDiabetes);
 
 // Heart
-diseaseRoutes.get("/heart-data", protect, getHeartData);
-diseaseRoutes.post("/heart-predict", protect, predictHeart);
+diseaseRoutes.get("/heart-data", getHeartData);
+diseaseRoutes.post("/heart-predict", predictHeart);
 
 //history of pridiction 
-diseaseRoutes.get("/history", protect, getUserPredictionHistory);
+diseaseRoutes.get("/history", getUserPredictionHistory);
 
 export default diseaseRoutes;

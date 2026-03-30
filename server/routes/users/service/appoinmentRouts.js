@@ -1,19 +1,20 @@
 import express from "express";
-import { protect } from "../../../middleware/authMiddleware.js";
 
-import { createAppointment, getAllDoctors, getAvailableSlots, getUserAppointmentHistory, getUserAppointments } from "../../../controllers/user/appointmentController.js";
+import { cancelAppointmentByUser, createAppointment, getAllDoctors, getAvailableSlots, getDoctorDetails, getUserAppointmentDetails, getUserAppointmentHistory, getUserAppointments } from "../../../controllers/user/appointmentController.js";
 
 
-const userRoutes = express.Router();
-
+const appoinmentRoutes = express.Router();
 
 
 
-userRoutes.get("/get-doctors", protect, getAllDoctors);
-userRoutes.get("/doctor/:doctorId/available-slots", protect, getAvailableSlots);
-userRoutes.post("/create-appointment", protect, createAppointment);
-userRoutes.get("/my-appointment", protect, getUserAppointments);
-userRoutes.get("/appointments/history", protect, getUserAppointmentHistory);
 
+appoinmentRoutes.get("/get-doctors", getAllDoctors);
+appoinmentRoutes.get("/get-doctors/:id", getDoctorDetails);
+appoinmentRoutes.get("/doctor/:doctorId/available-slots", getAvailableSlots);
+appoinmentRoutes.post("/create-appointment", createAppointment);
+appoinmentRoutes.get("/my-appointment", getUserAppointments);
+appoinmentRoutes.get("/history", getUserAppointmentHistory);
+appoinmentRoutes.get("/appointment/:id", getUserAppointmentDetails);
+appoinmentRoutes.put("/cancelappointment", cancelAppointmentByUser);
 
-export default userRoutes;
+export default appoinmentRoutes;
