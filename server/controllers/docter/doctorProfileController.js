@@ -184,7 +184,7 @@ export const updateDoctorProfile = async (req, res) => {
 
     } = req.body;
 
-    let verificationReset = false;
+    // let verificationReset = false;
 
     // Parse JSON fields (important)
 
@@ -298,7 +298,7 @@ export const updateDoctorProfile = async (req, res) => {
 
 
     if (verificationReset) {
-      profile.verificationStatus = "pending";
+      profile.verificationStatus = "verified";
       profile.verifiedBy = null;
       profile.verifiedAt = null;
     }
