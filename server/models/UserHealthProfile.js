@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const userHealthProfileSchema = new mongoose.Schema(
   {
-    //  Reference to User
+
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -10,7 +10,6 @@ const userHealthProfileSchema = new mongoose.Schema(
       unique: true
     },
 
-    //  Basic Personal Health Info
     age: {
       type: Number,
       min: 0,
@@ -25,7 +24,7 @@ const userHealthProfileSchema = new mongoose.Schema(
     height: {
       value: {
         type: Number,
-        min: 30,  // cm
+        min: 30,  
         max: 300
       },
       unit: {
@@ -51,7 +50,6 @@ const userHealthProfileSchema = new mongoose.Schema(
       enum: ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]
     },
 
-    // Medical Background
     allergies: [
       {
         type: String
@@ -76,7 +74,6 @@ const userHealthProfileSchema = new mongoose.Schema(
       }
     ],
 
-    //  Lifestyle Information
     lifestyle: {
       smoking: {
         type: Boolean,
@@ -100,14 +97,12 @@ const userHealthProfileSchema = new mongoose.Schema(
       }
     },
 
-    //  Emergency Contact
     emergencyContact: {
       name: String,
       relation: String,
       phone: String
     },
 
-    // Optional Calculated Fields
     bmi: {
       type: Number
     },

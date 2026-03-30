@@ -13,7 +13,7 @@ const predictionHistorySchema = new mongoose.Schema({
   },
 
   prediction: {
-    type: Number, // 0 or 1
+    type: Number, 
     required: true
   },
 
@@ -23,17 +23,17 @@ const predictionHistorySchema = new mongoose.Schema({
   },
 
   probability: {
-    type: Number, // store like 82.34
+    type: Number, 
     required: true
   },
 
   inputData: {
-    type: Object, // store features user entered
+    type: Object,
     required: true
   }
 
 }, {
-  timestamps: true // automatically adds createdAt & updatedAt
+  timestamps: true 
 });
 
 export default mongoose.model("PredictionHistory", predictionHistorySchema);

@@ -29,21 +29,20 @@ const appointmentSchema = new mongoose.Schema(
       required: true,
     },
 
-    // ✅ Mode
+  
     mode: {
       type: String,
       enum: ["online", "offline"],
       required: true,
     },
 
-    // ✅ Snapshot of User Location
     userLocation: {
       city: String,
       latitude: Number,
       longitude: Number,
     },
 
-    // ✅ Snapshot of Doctor Location
+  
     doctorLocation: {
       clinicName: String,
       addressLine: String,
@@ -61,6 +60,61 @@ const appointmentSchema = new mongoose.Schema(
       enum: ["pending", "confirmed", "cancelled", "completed", "rejected"],
       default: "pending",
     },
+
+    cancelledBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null
+    },
+
+    cancelledByRole: {
+      type: String,
+      enum: ["user", "doctor", "admin"],
+      default: null
+    },
+
+    cancellationRemark: {
+      type: String,
+      trim: true,
+      maxlength: 300,
+      default: null
+    },
+
+    actions: [
+      {
+        action: {
+          type: String,
+          enum: ["created", "confirmed", "cancelled", "completed", "rejected"],
+          required: true
+        },
+
+        performedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true
+        },
+
+        role: {
+          type: String,
+          enum: ["user", "doctor", "admin"],
+          required: true
+        },
+
+        remark: {
+          type: String,
+          trim: true,
+          maxlength: 300,
+          default: null
+        },
+
+        time: {
+          type: Date,
+          default: Date.now,
+          immutable: true
+        }
+      }
+    ]
+
   },
   { timestamps: true }
 );

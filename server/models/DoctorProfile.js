@@ -11,7 +11,6 @@ const doctorProfileSchema = new mongoose.Schema(
 
     specialization: {
       type: String,
-      required: true,
     },
 
     qualifications: [
@@ -22,20 +21,99 @@ const doctorProfileSchema = new mongoose.Schema(
       },
     ],
 
-    experience: {
-      type: Number,
-      required: true,
+    certifications: [
+      {
+        title: String,
+        issuedBy: String,
+        year: Number
+      }
+    ],
+
+    awards: [
+      {
+        title: String,
+        year: Number
+      }
+    ],
+    languages: [
+      {
+        type: String
+      }
+    ],
+
+    servicesOffered: [
+      {
+        type: String
+      }
+    ],
+    totalExperience: {
+      type: Number
     },
+    experienceDetails: [
+      {
+        hospital: String,
+        role: String,
+        years: Number
+      }
+    ],
 
     consultationFee: {
       type: Number,
-      required: true,
     },
 
-    hospitalName: String,
+    documents: [
+      {
+
+        documentType: {
+          type: String,
+          enum: [
+            "medical_license",
+            "degree_certificate",
+            "id_proof",
+            "experience_certificate",
+            "other"
+          ]
+        },
+
+        documentUrl: String,
+
+        verificationStatus: {
+          type: String,
+          enum: [
+            "pending",
+            "approved",
+            "rejected"
+          ],
+          default: "pending"
+        },
+
+        uploadedAt: {
+          type: Date,
+          default: Date.now
+        }
+
+      }
+    ],
+
+    employmentType: {
+      type: String,
+      enum: [
+        "independent",
+        "hospital_fulltime",
+        "hospital_visiting",
+        "consultant"
+      ],
+      default: "independent"
+    },
+
     bio: String,
 
-    // ✅ Clinic Address (for Offline Mode)
+    hospital: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "HospitalProfile",
+      default: null
+    },
+
     clinicLocation: {
       clinicName: {
         type: String,
@@ -59,8 +137,16 @@ const doctorProfileSchema = new mongoose.Schema(
         type: Number,
       },
     },
+    consultationMode: {
+      type: String,
+      enum: [
+        "online",
+        "offline",
+        "both"
+      ],
+      default: "offline"
+    },
 
-    // ✅ Available Days
     availableDays: [
       {
         type: String,
@@ -76,23 +162,43 @@ const doctorProfileSchema = new mongoose.Schema(
       },
     ],
 
-    // ✅ Same time for all selected days
-    availableTime: {
+    availability: {
       startTime: {
         type: String,
-        required: true,
       },
       endTime: {
         type: String,
-        required: true,
       },
+      slotDuration: {
+        type: Number,
+        default: 30
+      }
+    },
+
+    rating: {
+      type: Number,
+      default: 0
+    },
+
+    reviewCount: {
+      type: Number,
+      default: 0
     },
 
     isBookingEnabled: {
       type: Boolean,
       default: false,
     },
-
+    verificationStatus: {
+      type: String,
+      enum: ["pending", "verified", "rejected"],
+      default: "pending",
+    },
+    verifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    },
+    verifiedAt: Date,
   },
   { timestamps: true }
 );
