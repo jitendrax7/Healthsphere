@@ -339,15 +339,13 @@ export const getAllDoctors = async (req, res) => {
 };
 
 
-
 export const getDoctorDetails = async (req, res) => {
 
   try {
-
     const { id } = req.params;
-
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
+        success: false,
         message: "Invalid doctor id"
       });
     }
@@ -355,63 +353,116 @@ export const getDoctorDetails = async (req, res) => {
 
     const [doctor, profile] = await Promise.all([
       User.findById(id)
-        .select("Name profilePhoto location role")
+        .select(`Name profilePhoto location role `)
         .lean(),
-
       DoctorProfile.findOne({ user: id })
-        .select(
-          "specialization qualifications experience consultationFee hospitalName bio clinicLocation availableDays availableTime isBookingEnabled"
-        )
+        .populate({
+          path: "hospital",
+          select: "hospitalName"
+        })
+        .select(`specialization qualifications totalExperience consultationFee hospital bio clinicLocation availableDays availability consultationMode languages servicesOffered rating reviewCount isBookingEnabled`)
         .lean()
     ]);
 
 
-
     if (!doctor || doctor.role !== "doctor") {
+
       return res.status(404).json({
+        success: false,
         message: "Doctor not found"
       });
     }
 
+
     if (!profile) {
       return res.status(404).json({
+        success: false,
         message: "Doctor profile not found"
       });
     }
 
 
-    res.json({
+    return res.status(200).json({
+      success: true,
       doctor: {
         id: doctor._id,
         name: doctor.Name,
-        profilePhoto: doctor.profilePhoto,
-        city: doctor.location?.city || null
+        profilePhoto: doctor.profilePhoto || null,
+        city: doctor.location?.city || null,
+        rating: profile.rating || 0,
+        reviewCount: profile.reviewCount || 0
       },
+      // Professional info
       professional: {
-        specialization: profile.specialization,
-        experience: profile.experience,
-        consultationFee: profile.consultationFee,
-        hospitalName: profile.hospitalName,
-        bio: profile.bio
+        specialization:
+          profile.specialization || null,
+
+        experience:
+          profile.totalExperience || 0,
+
+        consultationFee:
+          profile.consultationFee || 0,
+
+        consultationMode:
+          profile.consultationMode || "offline",
+
+        hospital:
+          profile.hospital?.hospitalName || null,
+
+        bio:
+          profile.bio || ""
+
       },
-      qualifications: profile.qualifications || [],
+
+
+      // Education
+
+      qualifications:
+        profile.qualifications || [],
+      // Languages
+      languages:
+        profile.languages || [],
+
+      // Services
+      services:
+        profile.servicesOffered || [],
+      // Clinic info
       clinic: {
-        clinicName: profile.clinicLocation?.clinicName,
-        address: profile.clinicLocation?.addressLine,
-        city: profile.clinicLocation?.city,
-        state: profile.clinicLocation?.state,
-        pincode: profile.clinicLocation?.pincode
+        clinicName:
+          profile.clinicLocation?.clinicName || null,
+        address:
+          profile.clinicLocation?.addressLine || null,
+        city:
+          profile.clinicLocation?.city || null,
+        state:
+          profile.clinicLocation?.state || null,
+        pincode:
+          profile.clinicLocation?.pincode || null,
+        latitude:
+          profile.clinicLocation?.latitude || null,
+        longitude:
+          profile.clinicLocation?.longitude || null
       },
+
+      // Availability
       availability: {
-        availableDays: profile.availableDays || [],
-        startTime: profile.availableTime?.startTime,
-        endTime: profile.availableTime?.endTime,
-        bookingEnabled: profile.isBookingEnabled
+        availableDays:
+          profile.availableDays || [],
+        startTime:
+          profile.availability?.startTime || null,
+        endTime:
+          profile.availability?.endTime || null,
+        slotDuration:
+          profile.availability?.slotDuration || 30,
+        bookingEnabled:
+          profile.isBookingEnabled || false
       }
     });
 
-  } catch (error) {
-    res.status(500).json({
+  }
+  catch (error) {
+    return res.status(500).json({
+      success: false,
       message: "Server error",
       error: error.message
     });
@@ -461,7 +512,7 @@ export const getAvailableSlots = async (req, res) => {
       return res.json({ availableSlots: [] });
     }
 
-    const { startTime, endTime } = doctor.availableTime;
+    const { startTime, endTime } = doctor.availability;
 
     const toMinutes = (time) => {
       const [h, m] = time.split(":").map(Number);
@@ -593,8 +644,8 @@ export const createAppointment = async (req, res) => {
       return h * 60 + m;
     };
 
-    const doctorStart = toMinutes(doctorProfile.availableTime.startTime);
-    const doctorEnd = toMinutes(doctorProfile.availableTime.endTime);
+    const doctorStart = toMinutes(doctorProfile.availability.startTime);
+    const doctorEnd = toMinutes(doctorProfile.availability.endTime);
 
     const newStart = toMinutes(startTime);
     const newEnd = toMinutes(endTime);

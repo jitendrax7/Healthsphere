@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Appointment from "../../models/Appointment.js";
+import { createCalendarEvent } from "../../services/user/googleCalendar.service.js";
 
 export const getDoctorAnalytics = async (req, res) => {
 
@@ -422,6 +423,11 @@ export const updateAppointmentStatus = async (req, res) => {
       message: "Appointment updated",
       status: appointment.status
     });
+
+    if (status === "confirmed") {
+      await createCalendarEvent(appointment.user, appointment);
+    }
+
   } catch (error) {
     res.status(500).json({
       message: "Server Error",

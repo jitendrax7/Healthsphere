@@ -6,7 +6,7 @@ const isBoolean = (val) => {
     return typeof val === "boolean";
 };
 
-const allowedThemes = ["light", "dark", "system"];
+const allowedThemes = ["light", "dark", "system" , "health"];
 
 
 export const getSettings = async (req, res) => {
@@ -150,6 +150,8 @@ export const updateAppearance = async (req, res) => {
         });
 
     } catch (error) {
+        console.log(error);
+        
         res.status(500).json({
             message: "Update failed"
         });

@@ -6,19 +6,13 @@ export const getcontext = async (req, res) => {
     try {
 
         const userId = req.user.id;
-        
-
-        /* Fetch data */
-
         const [user, settings] = await Promise.all([
 
             User.findById(userId)
                 .select("_id location")
                 .lean(),
-
             UserSetting.findOne({ user: userId })
                 .lean()
-
         ]);
 
 
@@ -35,12 +29,9 @@ export const getcontext = async (req, res) => {
             },
 
             theme: settings?.appearance?.theme || "system",
-
             language: settings?.appearance?.language || "en",
 
-            timezone: settings?.appearance?.timezone || "Asia/Kolkata",
-
-            notificationCount: 5   // dummy
+            timezone: settings?.appearance?.timezone || "Asia/Kolkata"
 
         });
 
@@ -49,11 +40,10 @@ export const getcontext = async (req, res) => {
         console.error(error);
 
         res.status(500).json({
-
+             error: error.message,
             message: "Failed to fetch settings"
 
         });
-
     }
 
 };

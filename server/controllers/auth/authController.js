@@ -34,6 +34,14 @@ export const registerUser = async (req, res) => {
       });
     }
 
+    // verify role
+    const validRoles = ["user", "doctor", "hospital"];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({
+        message: "Invalid role"
+      });
+    }
+
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -54,7 +62,7 @@ export const registerUser = async (req, res) => {
       Name,
       email,
       password: hashedPassword,
-      role: role === "doctor" ? "doctor" : "user",
+      role: role,
       phoneNumber,
       otp,
       otpExpire: Date.now() + 10 * 60 * 1000, // 10 minutes
@@ -285,9 +293,6 @@ export const loginUser = async (req, res) => {
 export const getUserStatus = async (req, res) => {
   try {
 
-    // console.log("Authenticated user:", req.user); // Debugging line
-    // console.log("Authenticated user:", req.user.id); // Debugging line
-    // console.log("Authenticated user:", req.user._id); // Debugging line
     res.status(200).json({
       isLoggedIn: true,
       user: {
@@ -295,7 +300,7 @@ export const getUserStatus = async (req, res) => {
         role: req.user.role,
         Name: req.user.Name,
         email: req.user.email,
-        profilePhoto: "https://tse1.explicit.bing.net/th/id/OIP.eOwuD0szBt89gR5aPcjL5wHaHa?w=1920&h=1920&rs=1&pid=ImgDetMain&o=7&rm=3"  // for now 
+        profilePhoto: req.user.profilePhoto
       }
     });
   } catch (error) {
