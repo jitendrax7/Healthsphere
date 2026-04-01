@@ -127,47 +127,50 @@ const DoctorSettingsModal = () => {
   const bdr  = theme === 'light' ? 'border-gray-200' : 'border-white/10';
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 lg:p-8 animate-fade-in">
-      <div className={`w-full max-w-5xl h-[78vh] rounded-2xl shadow-2xl border ${bdr} flex flex-col md:flex-row overflow-hidden animate-slide-up relative ${bg}`}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-end md:items-center justify-center md:p-8 animate-fade-in">
+      <div className={`w-full max-w-5xl h-[90vh] md:h-[78vh] rounded-t-[2.5rem] md:rounded-2xl shadow-2xl border-t md:border ${bdr} flex flex-col md:flex-row overflow-hidden animate-slide-up relative ${bg} pb-safe`}>
 
-        {/* Close */}
+        <div className="md:hidden w-full flex justify-center py-3 bg-transparent absolute top-0 z-50 pointer-events-none">
+          <div className="w-12 h-1.5 bg-white/20 rounded-full" />
+        </div>
+
         <button
           onClick={() => navigate('/doctor/dashboard')}
-          className={`absolute top-4 right-4 p-2 rounded-full z-10 transition-colors ${theme === 'light' ? 'text-gray-400 hover:text-gray-700 hover:bg-gray-100' : 'text-white/50 hover:text-white bg-white/5 hover:bg-white/10'}`}
+          className={`absolute top-5 right-5 md:top-4 md:right-4 p-2 rounded-full z-40 transition-colors ${theme === 'light' ? 'text-gray-400 hover:text-gray-700 hover:bg-gray-100' : 'text-white/50 hover:text-white bg-white/5 hover:bg-white/10'}`}
         >
           <X size={20} />
         </button>
 
-        {/* Left sidebar tabs */}
-        <div className={`w-full md:w-64 border-r ${bdr} ${bg2} p-4 space-y-1 overflow-y-auto`}>
-          <div className="flex items-center gap-2 mb-5 px-3 pt-2">
+        <div className={`w-full md:w-64 md:border-r ${theme === 'light' ? 'border-gray-200 bg-gray-50/80' : 'border-white/10 bg-dark-900/60'} p-3 md:p-4 overflow-x-auto md:overflow-y-auto scrollbar-hide flex-shrink-0 border-b md:border-b-0`}>
+          <div className="hidden md:flex items-center gap-2 mb-5 px-3 pt-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-cyan to-primary-500 flex items-center justify-center text-white text-xs font-bold">D</div>
             <h2 className={`text-sm font-bold uppercase tracking-wider ${sub}`}>Doctor Settings</h2>
           </div>
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'bg-primary-500/10 text-primary-500'
-                  : theme === 'light' ? 'text-gray-600 hover:bg-gray-100' : 'text-white/60 hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              <tab.icon size={16} />
-              {tab.label}
-            </button>
-          ))}
+          
+          <div className="flex md:flex-col gap-2 mt-8 md:mt-0 px-2 md:px-0">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChange(tab.id)}
+                className={`flex-shrink-0 flex items-center gap-2 md:gap-3 px-4 py-2.5 md:px-3 md:py-2.5 rounded-full md:rounded-xl text-sm font-medium transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20 md:border-transparent'
+                    : theme === 'light' ? 'text-gray-600 bg-white md:bg-transparent border border-gray-200 md:border-transparent hover:bg-gray-100' : 'text-white/60 bg-white/5 md:bg-transparent border border-white/5 md:border-transparent hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <tab.icon size={16} />
+                <span className="whitespace-nowrap">{tab.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Right pane */}
-        <div className="flex-1 p-6 md:p-10 overflow-y-auto custom-scrollbar">
-          <div className="max-w-2xl">
-            <h1 className={`text-2xl font-bold mb-8 border-b pb-4 capitalize ${text} ${bdr}`}>
+        <div className="flex-1 p-5 md:p-10 overflow-y-auto custom-scrollbar">
+          <div className="max-w-2xl mx-auto md:mx-0">
+            <h1 className={`text-xl md:text-2xl font-bold mb-6 md:mb-8 border-b pb-4 capitalize ${text} ${bdr}`}>
               {TABS.find(t => t.id === activeTab)?.label}
             </h1>
 
-            {/* ── GENERAL ── */}
             {activeTab === 'general' && (
               <div className="space-y-8 animate-fade-in">
                 <div>
@@ -210,12 +213,11 @@ const DoctorSettingsModal = () => {
               </div>
             )}
 
-            {/* ── APPEARANCE ── */}
             {activeTab === 'appearance' && (
               <div className="space-y-6 animate-fade-in">
                 <div>
                   <h3 className={`text-sm font-semibold mb-3 ${text}`}>Interface Theme</h3>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-3 md:gap-4">
                     {[
                       { id: 'dark',   icon: Moon,    label: 'Dark'   },
                       { id: 'light',  icon: Sun,     label: 'Light'  },
@@ -224,13 +226,13 @@ const DoctorSettingsModal = () => {
                       <button
                         key={opt.id}
                         onClick={() => handleTheme(opt.id)}
-                        className={`p-4 rounded-xl border text-sm font-medium flex flex-col items-center gap-3 transition-colors ${
+                        className={`p-3 md:p-4 rounded-xl border text-xs md:text-sm font-medium flex flex-col items-center gap-3 transition-colors ${
                           theme === opt.id || (opt.id === 'dark' && theme !== 'light')
                             ? 'border-primary-500 bg-primary-500/10 text-primary-500'
                             : theme === 'light' ? 'border-gray-200 text-gray-500 hover:border-gray-400' : 'border-white/10 text-white/60 hover:border-white/30'
                         }`}
                       >
-                        <div className={`w-12 h-8 rounded-md border ${opt.id === 'dark' ? 'bg-dark-900 border-white/20' : opt.id === 'light' ? 'bg-white border-gray-300' : 'bg-gradient-to-r from-dark-900 to-white border-gray-300'}`} />
+                        <div className={`w-10 h-6 md:w-12 md:h-8 rounded-md border ${opt.id === 'dark' ? 'bg-dark-900 border-white/20' : opt.id === 'light' ? 'bg-white border-gray-300' : 'bg-gradient-to-r from-dark-900 to-white border-gray-300'}`} />
                         <span>{opt.label}</span>
                       </button>
                     ))}
@@ -239,9 +241,8 @@ const DoctorSettingsModal = () => {
               </div>
             )}
 
-            {/* ── NOTIFICATIONS ── */}
             {activeTab === 'notifications' && (
-              <div className="space-y-4 animate-fade-in">
+              <div className="space-y-3 md:space-y-4 animate-fade-in">
                 <ToggleRow theme={theme} title="Email Notifications" desc="Appointment confirmations and updates via email"
                   value={emailNotif} onToggle={() => handleNotif('emailNotifications', !emailNotif)} />
                 <ToggleRow theme={theme} title="SMS / Phone Alerts" desc="Text message alerts for new appointments"
@@ -251,31 +252,29 @@ const DoctorSettingsModal = () => {
                 <ToggleRow theme={theme} title="Appointment Reminders" desc="Get notified 1 hour before each appointment"
                   value={appointmentAlert} onToggle={() => handleNotif('appointmentReminder', !appointmentAlert)} />
 
-                <hr className={`my-2 ${bdr}`} />
-                <div className={`bg-primary-500/5 border border-primary-500/20 rounded-xl p-5 flex items-center justify-between`}>
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${bdr} ${bg2}`}>
+                <hr className={`my-4 ${bdr}`} />
+                <div className={`bg-primary-500/5 border border-primary-500/20 rounded-xl p-4 md:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4`}>
+                  <div className="flex items-center gap-4 w-full md:w-auto">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border shrink-0 ${bdr} ${bg2}`}>
                       <Calendar size={18} className="text-primary-500" />
                     </div>
                     <div>
                       <h4 className={`text-sm font-bold mb-0.5 ${text}`}>Google Calendar</h4>
-                      <p className={`text-[13px] ${sub}`}>Sync appointments and set reminders</p>
+                      <p className={`text-[12px] md:text-[13px] ${sub}`}>Sync appointments and set reminders</p>
                     </div>
                   </div>
-                  <button className="px-4 py-2 border border-primary-500/50 hover:bg-primary-500/20 text-primary-500 rounded-lg text-sm font-medium transition-colors whitespace-nowrap">
+                  <button className="w-full md:w-auto px-4 py-2 border border-primary-500/50 hover:bg-primary-500/20 text-primary-500 rounded-lg text-sm font-medium transition-colors whitespace-nowrap">
                     Connect
                   </button>
                 </div>
               </div>
             )}
 
-            {/* ── LOCATION ── */}
             {activeTab === 'location' && (
-              <div className="space-y-6 animate-fade-in">
+              <div className="space-y-5 md:space-y-6 animate-fade-in">
                 <p className={`text-sm ${sub}`}>Set your current location so patients nearby can find you easily.</p>
 
-                {/* Live detect */}
-                <div className={`p-5 rounded-2xl border ${bdr} ${bg2} space-y-4`}>
+                <div className={`p-4 md:p-5 rounded-2xl border ${bdr} ${bg2} space-y-4`}>
                   <h3 className={`text-sm font-semibold ${text}`}>Live Location</h3>
                   {locationCity && (
                     <div className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-green-500/10 border border-green-500/20 w-fit`}>
@@ -302,7 +301,7 @@ const DoctorSettingsModal = () => {
                         () => { setLocationMsg('Permission denied.'); setGeoLoading(false); }
                       );
                     }}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-sm font-semibold transition-all disabled:opacity-60"
+                    className="flex w-full md:w-auto justify-center md:items-center gap-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-sm font-semibold transition-all disabled:opacity-60"
                   >
                     {geoLoading ? <Loader2 size={14} className="animate-spin" /> : <Crosshair size={14} />}
                     {geoLoading ? 'Detecting…' : 'Use My Location'}
@@ -312,11 +311,10 @@ const DoctorSettingsModal = () => {
                   )}
                 </div>
 
-                {/* Manual city */}
-                <div className={`p-5 rounded-2xl border ${bdr} ${bg2} space-y-3`}>
+                <div className={`p-4 md:p-5 rounded-2xl border ${bdr} ${bg2} space-y-3`}>
                   <h3 className={`text-sm font-semibold ${text}`}>Set City Manually</h3>
                   <p className={`text-xs ${sub}`}>Type your city name if location detection isn't available.</p>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col md:flex-row gap-3">
                     <input
                       type="text"
                       value={manualCity}
@@ -338,7 +336,7 @@ const DoctorSettingsModal = () => {
                           setTimeout(() => setLocationMsg(''), 2500);
                         } catch { setLocationMsg('Update failed.'); }
                       }}
-                      className="px-4 py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-sm font-semibold transition-all"
+                      className="px-4 w-full md:w-auto py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-sm font-semibold transition-all"
                     >
                       Save
                     </button>
@@ -347,10 +345,9 @@ const DoctorSettingsModal = () => {
               </div>
             )}
 
-            {/* ── PROFILE VISIBILITY ── */}
             {activeTab === 'visibility' && (
-              <div className="space-y-4 animate-fade-in">
-                <p className={`text-sm mb-6 ${sub}`}>Control what patients can see on your public profile.</p>
+              <div className="space-y-3 md:space-y-4 animate-fade-in">
+                <p className={`text-sm mb-4 md:mb-6 ${sub}`}>Control what patients can see on your public profile.</p>
 
                 <ToggleRow theme={theme} title="Public Profile" desc="Allow patients to discover and view your profile"
                   value={profilePublic} onToggle={() => setProfilePublic(v => !v)} />
@@ -367,17 +364,16 @@ const DoctorSettingsModal = () => {
               </div>
             )}
 
-            {/* ── ACCOUNT ── */}
             {activeTab === 'account' && (
-              <div className="space-y-6 animate-fade-in">
-                <div className={`bg-primary-500/10 border border-primary-500/20 rounded-2xl p-5 flex items-start justify-between`}>
+              <div className="space-y-5 md:space-y-6 animate-fade-in">
+                <div className={`bg-primary-500/10 border border-primary-500/20 rounded-2xl p-4 md:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4`}>
                   <div>
                     <h3 className={`font-bold flex items-center gap-2 mb-1 ${text}`}>
                       <Shield size={16} className="text-primary-500" /> Secure your account
                     </h3>
-                    <p className={`text-sm ${sub}`}>Add multi-factor authentication (MFA) to protect your account.</p>
+                    <p className={`text-xs md:text-sm ${sub}`}>Add multi-factor authentication (MFA) to protect your account.</p>
                   </div>
-                  <button className="bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap ml-4">
+                  <button className="w-full md:w-auto bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap">
                     Set up MFA
                   </button>
                 </div>
@@ -388,7 +384,7 @@ const DoctorSettingsModal = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className={`text-sm font-medium mb-0.5 ${text}`}>Change Password</h4>
-                      <p className={`text-[13px] ${sub}`}>Update your login password</p>
+                      <p className={`text-xs md:text-[13px] ${sub}`}>Update your login password</p>
                     </div>
                     <button className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
                       theme === 'light' ? 'border-gray-200 text-gray-700 hover:bg-gray-50' : 'border-white/10 text-white/80 hover:bg-white/5'
@@ -398,7 +394,7 @@ const DoctorSettingsModal = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className={`text-sm font-medium mb-0.5 ${text}`}>Active Sessions</h4>
-                      <p className={`text-[13px] ${sub}`}>Manage devices logged into your account</p>
+                      <p className={`text-xs md:text-[13px] ${sub}`}>Manage devices logged into your account</p>
                     </div>
                     <button className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
                       theme === 'light' ? 'border-gray-200 text-gray-700 hover:bg-gray-50' : 'border-white/10 text-white/80 hover:bg-white/5'

@@ -1,135 +1,150 @@
-import { useState, useEffect } from 'react';
-import { Droplets, CheckCircle, User, Phone, MapPin, Loader2 } from 'lucide-react';
-import { bloodApi } from '../api/axios';
+import { useState, useEffect, useCallback } from 'react';
+import { Droplets, Mail, History, Bell, CheckCircle2, Loader2, Globe } from 'lucide-react';
+import { donorApi } from '../api/axios';
+import DonorRegisterForm from '../components/blood/donor/DonorRegisterForm';
+import DonorProfileCard from '../components/blood/donor/DonorProfileCard';
+import DonorInvites from '../components/blood/donor/DonorInvites';
+import DonorHistory from '../components/blood/donor/DonorHistory';
+import DonorNotifications from '../components/blood/donor/DonorNotifications';
+import BloodCommunity from '../components/blood/donor/BloodCommunity';
 
-const BLOOD_GROUPS = ['A+','A-','B+','B-','AB+','AB-','O+','O-'];
+const TABS = [
+  { key: 'community',     label: 'Community',     icon: Globe,    donorOnly: false },
+  { key: 'profile',       label: 'Profile',       icon: Droplets, donorOnly: true  },
+  { key: 'invites',       label: 'Invites',       icon: Mail,     donorOnly: true  },
+  { key: 'history',       label: 'History',       icon: History,  donorOnly: true  },
+  { key: 'notifications', label: 'Notifs',        icon: Bell,     donorOnly: true  },
+];
 
 const BloodDonationPage = () => {
-  const [tab, setTab]             = useState('register');
-  const [donors, setDonors]       = useState([]);
-  const [loading, setLoading]     = useState(false);
-  const [success, setSuccess]     = useState(false);
-  const [form, setForm]           = useState({ bloodGroup: '', city: '', contact: '', lastDonationDate: '' });
+  const [tab, setTab]                       = useState('community');
+  const [donor, setDonor]                   = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [registered, setRegistered]         = useState(false);
+  const [notifCount, setNotifCount]         = useState(0);
+  const [showRegister, setShowRegister]     = useState(false);
+
+  const fetchProfile = useCallback(async () => {
+    setProfileLoading(true);
+    try {
+      const res = await donorApi.getProfile();
+      setDonor(res.data.data || null);
+    } catch {
+      setDonor(null);
+    }
+    finally { setProfileLoading(false); }
+  }, []);
+
+  const fetchNotifCount = useCallback(async () => {
+    try {
+      const res = await donorApi.getNotifications();
+      const d = res.data.data || {};
+      setNotifCount(d.unreadCount ?? 0);
+    } catch {}
+  }, []);
 
   useEffect(() => {
-    if (tab === 'find') {
-      setLoading(true);
-      bloodApi.getDonors().then(r => setDonors(r.data.donors || [])).catch(() => {}).finally(() => setLoading(false));
-    }
-  }, [tab]);
+    fetchProfile();
+    fetchNotifCount();
+  }, [fetchProfile, fetchNotifCount]);
 
-  const handleSubmit = async e => {
-    e.preventDefault(); setLoading(true);
-    try {
-      await bloodApi.register(form);
-      setSuccess(true);
-    } catch { }
-    finally { setLoading(false); }
+  useEffect(() => {
+    if (donor) setTab('profile');
+  }, [donor]);
+
+  const handleRegistered = () => {
+    setRegistered(true);
+    setShowRegister(false);
+    fetchProfile();
   };
 
+  const visibleTabs = TABS.filter(t => !t.donorOnly || donor);
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-1">Blood Donation</h1>
-        <p className="text-white/40">Register as a donor or find blood donors near you</p>
-      </div>
+    <div className="space-y-5 animate-fade-in"> 
 
-      <div className="flex gap-2 p-1 glass rounded-xl w-fit">
-        {[['register','🩸 Register as Donor'],['find','🔍 Find Donors']].map(([k,l]) => (
-          <button key={k} onClick={() => setTab(k)}
-            className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${tab===k ? 'bg-accent-pink/80 text-white shadow-glow-purple' : 'text-white/50 hover:text-white'}`}>
-            {l}
-          </button>
-        ))}
-      </div>
-
-      {/* REGISTER */}
-      {tab === 'register' && !success && (
-        <div className="glass p-6 rounded-2xl max-w-lg">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-pink to-accent-orange flex items-center justify-center">
-              <Droplets size={18} className="text-white" />
-            </div>
-            <h2 className="font-semibold text-white">Donor Registration</h2>
-          </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs text-white/50 mb-1.5">Blood Group</label>
-              <div className="grid grid-cols-4 gap-2">
-                {BLOOD_GROUPS.map(g => (
-                  <button key={g} type="button" onClick={() => setForm({...form, bloodGroup:g})}
-                    className={`py-2 rounded-xl text-sm font-semibold border transition-all ${
-                      form.bloodGroup===g ? 'bg-accent-pink/20 border-accent-pink text-accent-pink' : 'border-white/10 text-white/50 hover:border-white/30'
-                    }`}>{g}</button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs text-white/50 mb-1.5">City</label>
-              <div className="relative">
-                <MapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" />
-                <input type="text" value={form.city} onChange={e => setForm({...form, city:e.target.value})} required
-                  placeholder="Your city..." className="input-dark pl-10 text-sm" />
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs text-white/50 mb-1.5">Contact Number</label>
-              <div className="relative">
-                <Phone size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" />
-                <input type="tel" value={form.contact} onChange={e => setForm({...form, contact:e.target.value})} required
-                  placeholder="+91..." className="input-dark pl-10 text-sm" />
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs text-white/50 mb-1.5">Last Donation Date (optional)</label>
-              <input type="date" value={form.lastDonationDate} onChange={e => setForm({...form, lastDonationDate:e.target.value})}
-                className="input-dark text-sm" />
-            </div>
-            <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-accent-pink to-accent-orange text-white font-semibold py-3 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2">
-              {loading ? <><Loader2 size={15} className="animate-spin"/>Registering...</> : '🩸 Register as Donor'}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-0">
+        <div className="flex gap-1 p-1 glass rounded-xl overflow-x-auto scrollbar-hide w-full sm:w-fit">
+          {visibleTabs.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => { setTab(key); setShowRegister(false); }}
+              className={`relative flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex-1 sm:flex-none justify-center sm:justify-start ${
+                tab === key
+                  ? key === 'community'
+                    ? 'bg-violet-500/20 text-violet-300 shadow-[0_0_12px_rgba(139,92,246,0.25)]'
+                    : 'bg-rose-500/20 text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.25)]'
+                  : 'text-white/50 hover:text-white'
+              }`}
+            >
+              <Icon size={13} />
+              <span className="hidden xs:inline sm:inline">{label}</span>
+              {key === 'notifications' && notifCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
+                  {notifCount > 9 ? '9+' : notifCount}
+                </span>
+              )}
             </button>
-          </form>
-        </div>
-      )}
+          ))}
 
-      {success && (
-        <div className="glass p-8 rounded-2xl max-w-lg text-center">
-          <CheckCircle size={44} className="text-green-400 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-white mb-2">Registered Successfully!</h3>
-          <p className="text-white/50 text-sm">Thank you for registering as a blood donor. Your contribution saves lives.</p>
-          <button onClick={() => { setSuccess(false); setForm({ bloodGroup:'', city:'', contact:'', lastDonationDate:'' }); }}
-            className="btn-primary mt-5 text-sm">Register Another</button>
-        </div>
-      )}
-
-      {/* FIND DONORS */}
-      {tab === 'find' && (
-        <div className="space-y-4">
-          {loading && <div className="flex justify-center py-10"><div className="w-8 h-8 border-2 border-accent-pink border-t-transparent rounded-full animate-spin" /></div>}
-          {!loading && donors.length === 0 && (
-            <div className="glass p-12 rounded-2xl text-center text-white/40">
-              <Droplets size={36} className="mx-auto mb-3 opacity-30" />
-              <p>No donors found in your area.</p>
-            </div>
+          {!donor && !profileLoading && (
+            <button
+              onClick={() => { setTab('community'); setShowRegister(r => !r); }}
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
+                showRegister
+                  ? 'bg-rose-500/20 text-rose-300'
+                  : 'text-white/50 hover:text-white border border-rose-500/20 hover:border-rose-500/40'
+              }`}
+            >
+              <Droplets size={13} />
+              <span>{showRegister ? 'Cancel' : 'Become a Donor'}</span>
+            </button>
           )}
-          <div className="grid sm:grid-cols-2 gap-4">
-            {donors.map((d, i) => (
-              <div key={i} className="glass p-5 rounded-xl hover:border-white/20 transition-all">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-pink to-accent-orange flex items-center justify-center text-sm font-bold text-white">{d.bloodGroup}</div>
-                  <div>
-                    <p className="font-medium text-white">{d.user?.Name || 'Anonymous'}</p>
-                    <p className="text-white/40 text-xs flex items-center gap-1"><MapPin size={10}/>{d.city}</p>
-                  </div>
-                </div>
-                <a href={`tel:${d.contact}`} className="flex items-center gap-1.5 text-accent-pink text-sm hover:opacity-80 transition-opacity">
-                  <Phone size={13}/>{d.contact}
-                </a>
-              </div>
-            ))}
-          </div>
         </div>
-      )}
+      </div>
+
+      <div className="animate-fade-in">
+        {profileLoading ? (
+          <div className="flex items-center justify-center py-16 sm:py-20">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-white/40 text-sm">Loading...</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {tab === 'community' && !showRegister && <BloodCommunity />}
+
+            {tab === 'community' && showRegister && (
+              <div className="space-y-4">
+                {registered ? (
+                  <div className="glass rounded-2xl p-8 sm:p-10 text-center max-w-md">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle2 size={28} className="text-emerald-400" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Welcome to the Network!</h3>
+                    <p className="text-white/50 text-sm">Your donor profile is being set up.</p>
+                    <button onClick={fetchProfile} className="btn-primary mt-5 text-sm flex items-center gap-2 mx-auto">
+                      <Loader2 size={14} /> Refresh Profile
+                    </button>
+                  </div>
+                ) : (
+                  <DonorRegisterForm onSuccess={handleRegistered} />
+                )}
+              </div>
+            )}
+
+            {tab !== 'community' && donor && (
+              <>
+                {tab === 'profile'       && <DonorProfileCard profile={donor} onUpdate={fetchProfile} />}
+                {tab === 'invites'       && <DonorInvites />}
+                {tab === 'history'       && <DonorHistory />}
+                {tab === 'notifications' && <DonorNotifications />}
+              </>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

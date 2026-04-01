@@ -11,7 +11,8 @@ import 'leaflet/dist/leaflet.css';
 import { doctorApi } from '../../api/axios';
 import { useApp } from '../../context/AppContext';
 import ProfilePhotoModal from '../../components/doctor/ProfilePhotoModal';
-
+import ProfileSectionCard from '../../components/doctor/ProfileSectionCard';
+import { ProfileHero, VerBadge } from '../../components/doctor/ProfileHero';
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -55,52 +56,15 @@ const MapPicker = ({ lat, lng, onChange }) => {
   );
 };
 
-/* ── Small Reusable ── */
 const Inp = (p) => <input {...p} className={`w-full bg-dark-800/60 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-primary-500/50 transition-colors ${p.className||''}`} />;
 const Sel = (p) => <select {...p} className={`w-full bg-dark-800/60 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary-500/50 transition-colors`}>{p.children}</select>;
 const Lbl = ({ c }) => <p className="text-[10px] text-white/40 uppercase tracking-wide font-bold mb-1.5">{c}</p>;
 
-const SectionCard = ({ icon: Icon, title, accent='primary', saving, onSave, editKey, activeEdit, setActiveEdit, children }) => {
-  const isEditing = activeEdit === editKey;
-  const colors = { primary: 'text-primary-400 border-primary-500/30 bg-primary-500/5', cyan: 'text-accent-cyan border-accent-cyan/30 bg-accent-cyan/5', amber: 'text-amber-400 border-amber-500/30 bg-amber-500/5', green: 'text-green-400 border-green-500/30 bg-green-500/5', purple: 'text-purple-400 border-purple-500/30 bg-purple-500/5' };
-  const col = colors[accent] || colors.primary;
-  return (
-    <div className={`glass rounded-2xl border transition-all duration-300 ${isEditing ? `border-${accent === 'primary' ? 'primary' : accent}-500/40 shadow-lg` : 'border-white/5'}`}>
-      <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-        <div className="flex items-center gap-2.5">
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${col.split(' ').slice(1).join(' ')}`}>
-            <Icon size={15} className={col.split(' ')[0]} />
-          </div>
-          <h3 className="text-sm font-bold text-white">{title}</h3>
-        </div>
-        <div className="flex items-center gap-2">
-          {isEditing && onSave && (
-            <button onClick={onSave} disabled={saving} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-bold shadow-glow-primary disabled:opacity-60 transition-all">
-              {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />} Save
-            </button>
-          )}
-          <button onClick={() => setActiveEdit(isEditing ? null : editKey)} className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${isEditing ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-white/5 border-white/10 text-white/50 hover:text-white'}`}>
-            {isEditing ? <><X size={11}/> Done</> : <><Pencil size={11}/> Edit</>}
-          </button>
-        </div>
-      </div>
-      <div className="p-5">{children}</div>
-    </div>
-  );
-};
-
-/* ── Tag Chip ── */
 const Tag = ({ label, onRemove, color = 'bg-white/5 text-white/70' }) => (
   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium ${color}`}>
     {label} {onRemove && <X size={10} className="cursor-pointer hover:text-red-400 ml-0.5" onClick={onRemove} />}
   </span>
 );
-
-/* ── Status Badge ── */
-const VerBadge = ({ status }) => {
-  const map = { pending: 'bg-amber-500/10 text-amber-400 border-amber-500/20', approved: 'bg-green-500/10 text-green-400 border-green-500/20', rejected: 'bg-red-500/10 text-red-400 border-red-500/20', verified: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
-  return <span className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase ${map[status] || map.pending}`}>{status}</span>;
-};
 
 /* ══════════════════════════════════════════════════════════ */
 const DoctorProfile = () => {
@@ -230,58 +194,26 @@ const DoctorProfile = () => {
   const docTypeLabel = { medical_license: 'Medical License', degree_certificate: 'Degree Certificate', id_proof: 'ID Proof', experience_certificate: 'Experience Certificate', other: 'Other' };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-5 animate-fade-in pb-16">
+    <div className="max-w-5xl mx-auto space-y-4 sm:space-y-5 animate-fade-in pb-16">
       {showPhotoModal && <ProfilePhotoModal onClose={() => setShowPhotoModal(false)} onSuccess={(url) => setProfilePhoto(url)} />}
 
-      {/* ── Hero ── */}
-      <div className="glass rounded-3xl p-6 border border-white/5 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-500/8 via-transparent to-accent-cyan/5 pointer-events-none" />
-        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 flex-wrap">
-          {/* Left: Identity */}
-          <div className="flex items-center gap-4">
-            <div className="relative shrink-0">
-              {profilePhoto
-                ? <img src={profilePhoto} className="w-20 h-20 rounded-2xl object-cover border border-white/10 shadow-xl" />
-                : <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center text-3xl font-bold text-white">{user?.Name?.[0] || 'D'}</div>}
-              <button onClick={() => setShowPhotoModal(true)} className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-primary-600 hover:bg-primary-500 rounded-lg flex items-center justify-center shadow-glow-primary transition-colors">
-                <Camera size={12} className="text-white" />
-              </button>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">Dr. {user?.Name || 'Doctor'}</h1>
-              <p className="text-accent-cyan text-sm font-semibold mt-0.5">{basic.specialization || 'Specialist'}</p>
-              <p className="text-white/40 text-xs mt-1 max-w-xs line-clamp-2">{basic.bio || 'No bio yet.'}</p>
-              <div className="flex items-center gap-2 mt-2 flex-wrap">
-                <VerBadge status={verificationStatus} />
-                {basic.totalExperience && <span className="text-[11px] text-white/50 bg-white/5 px-2 py-0.5 rounded-full"><Briefcase size={9} className="inline mr-1" />{basic.totalExperience} yrs</span>}
-                {basic.consultationFee && <span className="text-[11px] text-white/50 bg-white/5 px-2 py-0.5 rounded-full"><IndianRupee size={9} className="inline mr-1" />₹{basic.consultationFee}</span>}
-                {clinic.city && <span className="text-[11px] text-white/50 bg-white/5 px-2 py-0.5 rounded-full"><MapPin size={9} className="inline mr-1" />{clinic.city}</span>}
-              </div>
-            </div>
-          </div>
+      <ProfileHero
+        user={user}
+        profilePhoto={profilePhoto}
+        setShowPhotoModal={setShowPhotoModal}
+        basic={basic}
+        clinic={clinic}
+        verificationStatus={verificationStatus}
+        isBookingEnabled={isBookingEnabled}
+        handleBookingToggle={handleBookingToggle}
+        bookingLoading={bookingLoading}
+        profileDates={profileDates}
+        fmtDate={fmtDate}
+      />
 
-          {/* Right: Booking + Stats */}
-          <div className="flex flex-col items-end gap-3">
-            <button onClick={handleBookingToggle} disabled={bookingLoading} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border transition-all ${isBookingEnabled ? 'bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20' : 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'}`}>
-              {bookingLoading ? <Loader2 size={13} className="animate-spin" /> : <span className={`w-2 h-2 rounded-full ${isBookingEnabled ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />}
-              {isBookingEnabled ? 'Accepting Patients' : 'Not Accepting'}
-            </button>
-            <div className="flex items-center gap-4 text-right">
-              <div><p className="text-[10px] text-white/30 uppercase font-bold">Joined</p><p className="text-xs text-white/60">{fmtDate(profileDates.createdAt)}</p></div>
-              <div><p className="text-[10px] text-white/30 uppercase font-bold">Updated</p><p className="text-xs text-white/60">{fmtDate(profileDates.updatedAt)}</p></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Grid layout ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-        {/* Main column */}
-        <div className="lg:col-span-2 space-y-5">
-
-          {/* ── 1. Basic Info ── */}
-          <SectionCard icon={Stethoscope} title="Basic Information" accent="primary" saving={sectionSaving.basic} editKey="basic" activeEdit={activeEdit} setActiveEdit={setActiveEdit}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-5">
+          <ProfileSectionCard icon={Stethoscope} title="Basic Information" accent="primary" saving={sectionSaving.basic} editKey="basic" activeEdit={activeEdit} setActiveEdit={setActiveEdit}
             onSave={() => sectionSave('basic', () => {
               const fd = new FormData();
               Object.entries(basic).forEach(([k, v]) => fd.append(k, v));
@@ -323,10 +255,9 @@ const DoctorProfile = () => {
                 {basic.bio && <div className="col-span-2 bg-white/3 rounded-xl p-3 border border-white/5"><p className="text-[10px] text-white/30 uppercase font-bold mb-1">Bio</p><p className="text-sm text-white/80">{basic.bio}</p></div>}
               </div>
             )}
-          </SectionCard>
+          </ProfileSectionCard>
 
-          {/* ── 2. Languages & Services ── */}
-          <SectionCard icon={Globe} title="Languages & Services" accent="cyan" saving={sectionSaving.langserv} editKey="langserv" activeEdit={activeEdit} setActiveEdit={setActiveEdit}
+          <ProfileSectionCard icon={Globe} title="Languages & Services" accent="cyan" saving={sectionSaving.langserv} editKey="langserv" activeEdit={activeEdit} setActiveEdit={setActiveEdit}
             onSave={() => sectionSave('langserv', () => {
               const fd = new FormData();
               fd.append('languages', JSON.stringify(languages));
@@ -359,10 +290,9 @@ const DoctorProfile = () => {
                 <div><Lbl c="Services" /><div className="flex flex-wrap gap-2">{services.length ? services.map(s=><Tag key={s} label={s} color="bg-accent-cyan/10 text-accent-cyan" />) : <span className="text-white/20 text-xs italic">None added</span>}</div></div>
               </div>
             )}
-          </SectionCard>
+          </ProfileSectionCard>
 
-          {/* ── 3. Qualifications & Certifications ── */}
-          <SectionCard icon={GraduationCap} title="Qualifications & Certifications" accent="purple" saving={sectionSaving.quals} editKey="quals" activeEdit={activeEdit} setActiveEdit={setActiveEdit}
+          <ProfileSectionCard icon={GraduationCap} title="Qualifications & Certifications" accent="purple" saving={sectionSaving.quals} editKey="quals" activeEdit={activeEdit} setActiveEdit={setActiveEdit}
             onSave={() => sectionSave('quals', () => {
               const fd = new FormData();
               fd.append('qualifications', JSON.stringify(quals));
@@ -412,10 +342,9 @@ const DoctorProfile = () => {
                 {!quals.length && !certs.length && <p className="text-white/20 text-xs italic">No qualifications or certifications added yet.</p>}
               </div>
             )}
-          </SectionCard>
+          </ProfileSectionCard>
 
-          {/* ── 4. Awards & Experience ── */}
-          <SectionCard icon={Award} title="Awards & Work History" accent="amber" saving={sectionSaving.exp} editKey="exp" activeEdit={activeEdit} setActiveEdit={setActiveEdit}
+          <ProfileSectionCard icon={Award} title="Awards & Work History" accent="amber" saving={sectionSaving.exp} editKey="exp" activeEdit={activeEdit} setActiveEdit={setActiveEdit}
             onSave={() => sectionSave('exp', () => {
               const fd = new FormData();
               fd.append('awards', JSON.stringify(awards));
@@ -462,15 +391,11 @@ const DoctorProfile = () => {
                 {!awards.length && !experienceList.length && <p className="text-white/20 text-xs italic">No awards or experience added yet.</p>}
               </div>
             )}
-          </SectionCard>
-
+          </ProfileSectionCard>
         </div>
 
-        {/* ── Side column ── */}
-        <div className="space-y-5">
-
-          {/* ── 5. Schedule ── */}
-          <SectionCard icon={Clock} title="Schedule" accent="green" saving={sectionSaving.avail} editKey="avail" activeEdit={activeEdit} setActiveEdit={setActiveEdit}
+        <div className="space-y-4 sm:space-y-5">
+          <ProfileSectionCard icon={Clock} title="Schedule" accent="green" saving={sectionSaving.avail} editKey="avail" activeEdit={activeEdit} setActiveEdit={setActiveEdit}
             onSave={() => sectionSave('avail', () => {
               const fd = new FormData();
               fd.append('availableDays', JSON.stringify(avail.availableDays));
@@ -498,10 +423,9 @@ const DoctorProfile = () => {
                 </div>
               </div>
             )}
-          </SectionCard>
+          </ProfileSectionCard>
 
-          {/* ── 6. Clinic Location ── */}
-          <SectionCard icon={MapPin} title="Clinic Location" accent="primary" saving={sectionSaving.clinic} editKey="clinic" activeEdit={activeEdit} setActiveEdit={setActiveEdit}
+          <ProfileSectionCard icon={MapPin} title="Clinic Location" accent="primary" saving={sectionSaving.clinic} editKey="clinic" activeEdit={activeEdit} setActiveEdit={setActiveEdit}
             onSave={() => sectionSave('clinic', () => {
               const fd = new FormData();
               fd.append('clinicLocation', JSON.stringify({ ...clinic, latitude: Number(clinic.latitude), longitude: Number(clinic.longitude) }));
@@ -542,10 +466,9 @@ const DoctorProfile = () => {
                 {!clinic.clinicName && !clinic.latitude && <p className="text-white/20 text-xs italic">No location set.</p>}
               </div>
             )}
-          </SectionCard>
+          </ProfileSectionCard>
 
-          {/* ── 7. Documents ── */}
-          <SectionCard icon={Shield} title="Documents" accent="green" saving={sectionSaving.docs} editKey="docs" activeEdit={activeEdit} setActiveEdit={setActiveEdit}
+          <ProfileSectionCard icon={Shield} title="Documents" accent="green" saving={sectionSaving.docs} editKey="docs" activeEdit={activeEdit} setActiveEdit={setActiveEdit}
             onSave={() => sectionSave('docs', () => {
               const fd = new FormData();
               if (newDocs.medical_license) fd.append('medical_license', newDocs.medical_license);
@@ -593,7 +516,7 @@ const DoctorProfile = () => {
                 ))}
               </div>
             )}
-          </SectionCard>
+          </ProfileSectionCard>
 
         </div>
       </div>

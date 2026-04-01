@@ -40,8 +40,8 @@ const AIChatbot = () => {
 
   return (
     <>
-      {/* Floating Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      {/* Floating Button — hidden on mobile (bottom nav handles it there) */}
+      <div className="hidden md:block fixed bottom-6 right-6 z-50">
         <button onClick={() => setOpen(!open)}
           className="w-14 h-14 bg-gradient-to-br from-primary-600 to-accent-purple rounded-2xl shadow-glow-primary flex items-center justify-center text-white hover:scale-110 transition-all duration-300 relative">
           {open ? <X size={20} /> : <Sparkles size={20} />}
@@ -49,8 +49,8 @@ const AIChatbot = () => {
         </button>
       </div>
 
-      {/* Chat Window */}
-      <div className={`fixed bottom-24 right-6 w-[400px] max-w-[calc(100vw-2rem)] bg-dark-800 border border-white/10 rounded-2xl shadow-card-dark z-50 flex flex-col overflow-hidden transition-all duration-400 ${
+      {/* Chat Window — desktop only (mobile uses bottom sheet in MobileBottomNav) */}
+      <div className={`fixed bottom-24 right-6 w-[400px] max-w-[calc(100vw-2rem)] bg-dark-800 border border-white/10 rounded-2xl shadow-card-dark z-50 hidden md:flex flex-col overflow-hidden transition-all duration-400 ${
         open ? 'opacity-100 translate-y-0 scale-100 h-[560px]' : 'opacity-0 translate-y-8 scale-95 h-0 pointer-events-none'
       }`}>
 

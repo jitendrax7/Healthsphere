@@ -39,6 +39,7 @@ import HospitalHome            from './pages/Hospital/HospitalHome';
 import HospitalBloodDonation   from './pages/Hospital/HospitalBloodDonation';
 import HospitalHealthcareCamp  from './pages/Hospital/HospitalHealthcareCamp';
 import HospitalProfile         from './pages/Hospital/HospitalProfile';
+import HospitalSettings        from './pages/Hospital/HospitalSettings';
 
 function App() {
   return (
@@ -105,6 +106,7 @@ function App() {
           <Route path="blood-donation"  element={<HospitalBloodDonation />} />
           <Route path="healthcare-camp" element={<HospitalHealthcareCamp />} />
           <Route path="profile"         element={<HospitalProfile />} />
+          <Route path="settings"        element={<HospitalSettings />} />
         </Route>
 
         {/* ── Catch-all ── */}

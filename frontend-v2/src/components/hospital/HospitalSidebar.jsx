@@ -29,7 +29,7 @@ const HospitalSidebar = () => {
   const handleLogout = () => { logout(); navigate('/'); };
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-dark-800/95 backdrop-blur-xl border-r border-white/10 flex flex-col z-40">
+    <aside className="hidden md:flex fixed left-0 top-0 h-screen w-64 bg-dark-800/95 backdrop-blur-xl border-r border-white/10 flex-col z-40">
 
       {/* Logo */}
       <div className="flex items-center gap-3 p-5 border-b border-white/10">

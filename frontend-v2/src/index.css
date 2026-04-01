@@ -310,4 +310,21 @@
 
 @layer utilities {
   .text-balance { text-wrap: balance; }
+
+  .safe-area-pb {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (max-width: 767px) {
+    .md\:ml-20 { margin-left: 0 !important; }
+    .lg\:ml-64 { margin-left: 0 !important; }
+  }
 }

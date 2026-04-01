@@ -26,9 +26,8 @@ const DoctorSidebar = () => {
   const handleLogout = () => { logout(); navigate('/'); };
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-dark-800/95 backdrop-blur-xl border-r border-white/10 flex flex-col z-40">
+    <aside className="hidden md:flex fixed left-0 top-0 h-screen w-64 bg-dark-800/95 backdrop-blur-xl border-r border-white/10 flex-col z-40">
 
-      {/* Logo */}
       <div className="flex items-center gap-3 p-5 border-b border-white/10">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-cyan to-primary-500 flex items-center justify-center font-bold text-white shadow-glow-cyan flex-shrink-0">D</div>
         <div>
@@ -37,7 +36,6 @@ const DoctorSidebar = () => {
         </div>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 p-3 space-y-1 mt-2">
         {navItems.map(({ name, path, icon: Icon }) => (
           <NavLink key={path} to={path}
@@ -49,7 +47,6 @@ const DoctorSidebar = () => {
         ))}
       </nav>
 
-      {/* Profile popup */}
       <div className="p-3 border-t border-white/10 relative" ref={menuRef}>
         <button
           onClick={() => setShowMenu(!showMenu)}

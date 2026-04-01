@@ -63,7 +63,7 @@ const HospitalProfile = () => {
     <div className="max-w-3xl mx-auto space-y-6">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center">
             <Building2 size={20} className="text-white" />
@@ -84,14 +84,14 @@ const HospitalProfile = () => {
       </div>
 
       {/* Avatar + name */}
-      <div className="glass rounded-2xl p-6 flex items-center gap-5">
+      <div className="glass rounded-2xl p-6 flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-5">
         <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-3xl font-bold text-white flex-shrink-0 shadow-[0_0_24px_rgba(139,92,246,0.35)]">
           {(form.organizationName || 'H')[0]}
         </div>
         <div>
           <h2 className="text-xl font-bold text-white">{form.organizationName || 'Hospital Name'}</h2>
           <p className="text-white/50 text-sm mt-0.5">{form.email}</p>
-          <span className="mt-2 inline-flex items-center gap-1 text-xs text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2.5 py-1 rounded-full">
+          <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2.5 py-1 rounded-full">
             <Building2 size={10} /> Hospital Organization
           </span>
         </div>
