@@ -1,108 +1,120 @@
 import mongoose from "mongoose";
+import { BLOOD_GROUPS } from "../constants/bloodGroups.js";
+import { REQUEST_STATUS } from "../constants/requestStatus.js";
 
-const bloodRequestSchema = new mongoose.Schema({
+const bloodRequestSchema = new mongoose.Schema(
+  {
+    hospital: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "HospitalProfile",
+      required: true,
+    },
 
-  hospital:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:"HospitalProfile",
-    required:true
-  },
+    patientName: String,
 
-  patientName:String,
+    bloodGroup: {
+      type: String,
+      enum: BLOOD_GROUPS,
+      required: true,
+    },
 
-  bloodGroup:{
-    type:String,
-    enum:[
-      "A+","A-",
-      "B+","B-",
-      "AB+","AB-",
-      "O+","O-"
-    ],
-    required:true
-  },
+    unitsRequired: {
+      type: Number,
+      required: true,
+    },
 
-  unitsRequired:{
-    type:Number,
-    required:true
-  },
+    unitsFulfilled: {
+      type: Number,
+      default: 0,
+    },
 
-  urgency:{
-    type:String,
-    enum:[
-      "low",
-      "medium",
-      "high",
-      "critical"
-    ],
-    default:"medium"
-  },
+    urgencyLevel: {
+      type: String,
+      enum: ["NORMAL", "URGENT", "CRITICAL"],
+      default: "NORMAL",
+    },
 
-  requiredBefore:Date,
+    disease: String,
 
-  disease:String,
+    patientAge: Number,
 
-  patientAge:Number,
+    contactPerson: String,
 
-  contactPerson:String,
+    contactNumber: String,
 
-  contactNumber:String,
+    requiredBeforeDate: {
+      type: Date,
+      default: null,
+    },
 
-  location:{
+    expiresAt: {
+      type: Date,
+      default: null,
+    },
 
-    addressLine:String,
-
-    city:String,
-
-    state:String,
-
-    pincode:String,
-
-    latitude:Number,
-
-    longitude:Number
-
-  },
-
-  matchedDonors:[
-    {
-      type:mongoose.Schema.Types.ObjectId,
-      ref:"User"
-    }
-  ],
-
-  donorsResponded:[
-    {
-      donor:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User"
+    location: {
+      addressLine: String,
+      city: String,
+      state: String,
+      pincode: String,
+      geoLocation: {
+        type: {
+          type: String,
+          enum: ["Point"],
+          default: "Point",
+        },
+        coordinates: {
+          type: [Number],
+          default: undefined,
+        },
       },
+    },
 
-      status:{
-        type:String,
-        enum:[
-          "interested",
-          "donated",
-          "not_available"
-        ]
-      }
-    }
-  ],
+    matchedDonorsCount: {
+      type: Number,
+      default: 0,
+    },
 
-  status:{
-    type:String,
-    enum:[
-      "active",
-      "fulfilled",
-      "cancelled",
-      "expired"
+    acceptedDonorsCount: {
+      type: Number,
+      default: 0,
+    },
+
+    matchedDonors: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "DonorProfile",
+      },
     ],
-    default:"active"
+
+    donorsResponded: [
+      {
+        donor: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "DonorProfile",
+        },
+        status: {
+          type: String,
+          enum: ["interested", "donated", "not_available"],
+        },
+      },
+    ],
+
+    status: {
+      type: String,
+      enum: Object.values(REQUEST_STATUS),
+      default: REQUEST_STATUS.OPEN,
+    },
+
+    notes: String,
   },
-
-  notes:String
-
-},
-{timestamps:true}
+  { timestamps: true }
 );
 
-export default mongoose.model("BloodRequest",bloodRequestSchema);
+bloodRequestSchema.index({ hospital: 1 });
+bloodRequestSchema.index({ status: 1 });
+bloodRequestSchema.index({ bloodGroup: 1 });
+bloodRequestSchema.index({ "location.geoLocation": "2dsphere" });
+bloodRequestSchema.index({ expiresAt: 1 });
+
+export default mongoose.model("BloodRequest", bloodRequestSchema);
