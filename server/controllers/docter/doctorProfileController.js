@@ -152,15 +152,10 @@ export const updateDoctorProfile = async (req, res) => {
       });
 
     if (!profile) {
-
       return res.status(404).json({
-
         success: false,
-
         message: "Doctor profile not found"
-
       });
-
     }
 
     const {
@@ -186,15 +181,13 @@ export const updateDoctorProfile = async (req, res) => {
 
     // let verificationReset = false;
 
-    // Parse JSON fields (important)
+   
 
     const parseField = (field) => {
       return typeof field === "string"
         ? JSON.parse(field)
         : field;
     };
-
-    // Critical fields check
 
     if (
       specialization ||
@@ -206,7 +199,7 @@ export const updateDoctorProfile = async (req, res) => {
       verificationReset = true;
     }
 
-    // Update fields safely
+    
 
     if (specialization)
       profile.specialization = specialization;
@@ -270,31 +263,25 @@ export const updateDoctorProfile = async (req, res) => {
         parseField(clinicLocation);
 
 
-    // DOCUMENT UPDATE
+
 
     if (req.files) {
-
       const files =
         Object.values(req.files).flat();
 
       if (files.length > 0) {
-
         const uploadedDocs =
           await uploadDoctorDocumentsService(
             files,
             userId
           );
-
         profile.documents.push(
           ...uploadedDocs
         );
-
         verificationReset = true;
-
       }
 
     }
-
 
 
     if (verificationReset) {
@@ -302,9 +289,6 @@ export const updateDoctorProfile = async (req, res) => {
       profile.verifiedBy = null;
       profile.verifiedAt = null;
     }
-
-
-    // Save
 
     await profile.save();
 
@@ -504,7 +488,6 @@ export const toggleDoctorBooking = async (req, res) => {
       });
     }
 
-    // Validation only when enabling
     if (enable) {
 
       const missingFields = [];
@@ -566,9 +549,7 @@ export const toggleDoctorBooking = async (req, res) => {
     }
 
     profile.isBookingEnabled = enable;
-
     await profile.save();
-
     return res.status(200).json({
       success: true,
       bookingEnabled: profile.isBookingEnabled,
@@ -581,7 +562,6 @@ export const toggleDoctorBooking = async (req, res) => {
 
   }
   catch (error) {
-
     return res.status(500).json({
       success: false,
       message: "Server error",
