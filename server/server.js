@@ -9,17 +9,18 @@ import hospitalRoutes from "./routes/hospital/hospitalRoutes.js";
 import donorRoutes from "./routes/blood/donorRoutes.js";
 import bloodRoutes from "./routes/blood/bloodRoutes.js";
 import { initBloodJobs } from "./jobs/bloodJobs.js";
+import errorHandler from "./middleware/errorHandler.js";
 
 connectDB();
 
 const app = express();
 
-// app.use(
-//   cors({
-//     origin: process.env.ALLOWED_ORIGIN,
-//     credentials: true,
-//   })
-// );
+app.use(
+  cors({
+    origin: process.env.ALLOWED_ORIGIN,
+    credentials: true,
+  })
+);
 
 app.use(cors());
 
@@ -35,6 +36,8 @@ app.use("/api/doctor", docterRoutes);
 app.use("/api/hospital", hospitalRoutes);
 app.use("/api/donor", donorRoutes);
 app.use("/api/blood", bloodRoutes);
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000;
 

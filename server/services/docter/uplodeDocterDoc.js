@@ -1,59 +1,58 @@
 import cloudinary from "../../config/cloudinary.js";
+import fs from "fs";
 
 export const uploadDoctorDocumentsService = async (files, userId) => {
 
-    try {
+    if (!files || files.length === 0) {
+        throw new Error("Files missing");
+    }
 
-        if (!files || files.length === 0) {
-            throw new Error("Files missing");
-        }
+    const uploadPromises = files.map(async (file) => {
 
-        let uploadedDocuments = [];
+        try{
 
-        for (const file of files) {
-
-            const documentType = file.fieldname;
-
-            if (!documentType) {
-                throw new Error("Document type missing");
-            }
-
-            const base64 =
-                `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+            console.time(`Upload ${file.fieldname}`);
 
             const result =
-                await cloudinary.uploader.upload(
-                    base64,
-                    {
-                        folder: "healthsphere/doctors/documents",
+            await cloudinary.uploader.upload(
 
-                        public_id: `${userId}_${documentType}_${Date.now()}`,
+                file.path,
 
-                        overwrite: true,
+                {
+                    folder:"healthsphere/doctors/documents",
 
-                        resource_type: "auto"
-                    }
-                );
+                    public_id:
+                    `${userId}_${file.fieldname}_${Date.now()}`,
 
-            uploadedDocuments.push({
+                    resource_type:"auto"
+                }
 
-                documentType,
+            );
 
-                documentUrl: result.secure_url,
+            console.timeEnd(`Upload ${file.fieldname}`);
 
-                verificationStatus: "pending"
+            // delete temp file
+            fs.unlink(file.path,()=>{});
 
-            });
+            console.log("Uploaded:",file.fieldname);
+
+            return {
+                documentType:file.fieldname,
+                documentUrl:result.secure_url,
+                verificationStatus:"pending"
+            };
+
+        }
+        catch(error){
+
+            fs.unlink(file.path,()=>{});
+
+            throw error;
 
         }
 
-        return uploadedDocuments;
+    });
 
-    }
-    catch (error) {
-
-        throw error;
-
-    }
+    return await Promise.all(uploadPromises);
 
 };
