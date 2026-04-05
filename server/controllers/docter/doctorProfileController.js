@@ -3,9 +3,6 @@ import User from "../../models/User.js";
 import { uploadProfileImageService } from "../../services/docter/imageService.js";
 import { uploadDoctorDocumentsService } from "../../services/docter/uplodeDocterDoc.js";
 
-
-
-
 export const createDoctorProfile = async (req, res) => {
   try {
 
@@ -96,13 +93,26 @@ export const createDoctorProfile = async (req, res) => {
 
     let uploadedDocuments = [];
 
-    if (req.files && req.files.length > 0) {
+    if (req.files) {
+
+      const allFiles =
+        Object.values(req.files).flat();
+
       const documentLinks =
-        await uploadDoctorDocumentsService(req.files);
-      uploadedDocuments = documentLinks.map(doc => ({
-        documentType: doc.documentType,
-        documentUrl: doc.documentUrl
-      }));
+        await uploadDoctorDocumentsService(
+          allFiles,
+          req.user._id
+        );
+
+      uploadedDocuments =
+        documentLinks.map(doc => ({
+
+          documentType: doc.documentType,
+
+          documentUrl: doc.documentUrl
+
+        }));
+
     }
 
     const profile = await DoctorProfile.create({
@@ -181,7 +191,7 @@ export const updateDoctorProfile = async (req, res) => {
 
     // let verificationReset = false;
 
-   
+
 
     const parseField = (field) => {
       return typeof field === "string"
@@ -189,17 +199,17 @@ export const updateDoctorProfile = async (req, res) => {
         : field;
     };
 
-    if (
-      specialization ||
-      totalExperience ||
-      qualifications ||
-      experienceDetails ||
-      hospital
-    ) {
-      verificationReset = true;
-    }
+    // if (
+    //   specialization ||
+    //   totalExperience ||
+    //   qualifications ||
+    //   experienceDetails ||
+    //   hospital
+    // ) {
+    //   verificationReset = true;
+    // }
 
-    
+
 
     if (specialization)
       profile.specialization = specialization;
@@ -264,33 +274,42 @@ export const updateDoctorProfile = async (req, res) => {
 
 
 
+    console.time("TOTAL REQUEST");
 
-    if (req.files) {
+    if (req.files && Object.keys(req.files).length > 0) {
+
+      console.time("UPLOAD TIME");
+
       const files =
         Object.values(req.files).flat();
 
-      if (files.length > 0) {
-        const uploadedDocs =
-          await uploadDoctorDocumentsService(
-            files,
-            userId
-          );
-        profile.documents.push(
-          ...uploadedDocs
+      console.log("Files:", files.length);
+      console.log("files",files)
+
+      const uploadedDocs =
+        await uploadDoctorDocumentsService(
+          files,
+          userId
         );
-        verificationReset = true;
-      }
+
+      console.timeEnd("UPLOAD TIME");
+
+      profile.documents ??= [];
+
+      profile.documents.push(
+        ...uploadedDocs
+      );
 
     }
 
-
-    if (verificationReset) {
-      profile.verificationStatus = "verified";
-      profile.verifiedBy = null;
-      profile.verifiedAt = null;
-    }
+    console.time("DB SAVE");
+    console.log(profile)
 
     await profile.save();
+
+    console.timeEnd("DB SAVE");
+
+    console.timeEnd("TOTAL REQUEST");
 
     return res.status(200).json({
       success: true,
@@ -325,6 +344,10 @@ export const getDoctorProfile = async (req, res) => {
         .populate({
           path: "hospital",
           select: "hospitalName"
+        })
+        .populate({
+          path: "user",
+          select: "profilePhoto"
         })
 
         .select(`
@@ -366,6 +389,8 @@ export const getDoctorProfile = async (req, res) => {
 
     }
 
+    // console.log(profile);
+
 
     // Format documents
 
@@ -384,17 +409,18 @@ export const getDoctorProfile = async (req, res) => {
       success: true,
 
       profile: {
+        profilePhoto: profile.user?.profilePhoto || null,
         specialization: profile.specialization || null,
         qualifications: profile.qualifications || [],
-        certifications:profile.certifications || [],
+        certifications: profile.certifications || [],
         awards: profile.awards || [],
         languages: profile.languages || [],
         servicesOffered: profile.servicesOffered || [],
         totalExperience: profile.totalExperience || 0,
-        experienceDetails:profile.experienceDetails || [],
-        consultationFee:profile.consultationFee || 0,
-        employmentType:  profile.employmentType || "independent",
-        bio:  profile.bio || "",
+        experienceDetails: profile.experienceDetails || [],
+        consultationFee: profile.consultationFee || 0,
+        employmentType: profile.employmentType || "independent",
+        bio: profile.bio || "",
 
         // Hospital
 
@@ -411,21 +437,21 @@ export const getDoctorProfile = async (req, res) => {
           clinicName: profile.clinicLocation?.clinicName || null,
           addressLine: profile.clinicLocation?.addressLine || null,
           city: profile.clinicLocation?.city || null,
-          state:profile.clinicLocation?.state || null,
+          state: profile.clinicLocation?.state || null,
           pincode: profile.clinicLocation?.pincode || null,
-          latitude:  profile.clinicLocation?.latitude || null,
+          latitude: profile.clinicLocation?.latitude || null,
           longitude: profile.clinicLocation?.longitude || null
         },
 
         consultationMode: profile.consultationMode || "offline",
-        availableDays:profile.availableDays || [],
+        availableDays: profile.availableDays || [],
         availability: profile.availability || {},
 
         rating: profile.rating || 0,
         reviewCount: profile.reviewCount || 0,
-        isBookingEnabled:  profile.isBookingEnabled || false,
+        isBookingEnabled: profile.isBookingEnabled || false,
         verificationStatus: profile.verificationStatus || "pending",
-        verifiedAt:  profile.verifiedAt || null,
+        verifiedAt: profile.verifiedAt || null,
         // Documents
         documents: formattedDocuments,
         // Metadata
@@ -438,7 +464,7 @@ export const getDoctorProfile = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server error",
-     error: error.message
+      error: error.message
     });
   }
 
@@ -471,15 +497,27 @@ export const toggleDoctorBooking = async (req, res) => {
       });
     }
 
+    if(enable== false){
+      profile.isBookingEnabled = false;
+      await profile.save();
+      return res.status(200).json({
+        success: true,
+        bookingEnabled: profile.isBookingEnabled,
+        message: "Booking disabled"
+      });
+    }
+
     const user =
       await User.findById(userId);
 
-    if (!user.isVerified || user.accountStatus !== "active") {
+    if (!user.isVerified || user.accountStatus !== "active" || profile.verificationStatus !== "verified") {
       return res.status(403).json({
         success: false,
         message: "Account must be verified and active"
       });
     }
+
+    
 
     if (!user.profilePhoto) {
       return res.status(403).json({
