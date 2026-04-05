@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import {
   Clock, Building2, FileText, Shield,
-  RefreshCw, LogOut, CheckCircle2,
+  RefreshCw, LogOut, CheckCircle2, Loader2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useNavigate } from 'react-router-dom';
@@ -12,8 +13,20 @@ const HospitalPending = () => {
 
   const handleLogout = () => { logout(); navigate('/'); };
 
+  const [checking, setChecking] = useState(false);
+
   const handleRefresh = async () => {
-    await fetchHospitalStatus();
+    setChecking(true);
+    try {
+      const step = await fetchHospitalStatus();
+      if (step === 'approved') {
+        navigate('/hospital/dashboard');
+      } else if (step === 'rejected') {
+        navigate('/hospital/rejected');
+      }
+    } finally {
+      setChecking(false);
+    }
   };
 
   const completion = hospital?.profileCompletion ?? 0;
@@ -80,9 +93,10 @@ const HospitalPending = () => {
             </div>
           )}
 
-          <button onClick={handleRefresh}
-            className="flex items-center gap-2 mx-auto mt-5 glass px-4 py-2 rounded-xl text-sm text-white/60 hover:text-white transition-all">
-            <RefreshCw size={14} /> Check Status
+          <button onClick={handleRefresh} disabled={checking}
+            className="flex items-center gap-2 mx-auto mt-5 glass px-4 py-2 rounded-xl text-sm text-white/60 hover:text-white transition-all disabled:opacity-50">
+            {checking ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />} 
+            {checking ? 'Checking...' : 'Check Status'}
           </button>
         </div>
 

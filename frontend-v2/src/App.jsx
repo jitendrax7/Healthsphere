@@ -6,6 +6,7 @@ import Register    from './pages/auth/Register';
 import VerifyEmail from './pages/auth/VerifyEmail';
 
 import ProtectedRoute from './components/ProtectedRoute';
+import ApiToast from './components/ApiToast';
 
 // ── User ──────────────────────────────────────────────
 import UserDashboardLayout from './layouts/UserDashboardLayout';
@@ -44,6 +45,7 @@ import HospitalSettings        from './pages/Hospital/HospitalSettings';
 function App() {
   return (
     <Router>
+      <ApiToast />
       <Routes>
         {/* ── Public ── */}
         <Route path="/"             element={<Landing />} />

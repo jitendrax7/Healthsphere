@@ -33,6 +33,21 @@ const VerifyEmail = () => {
     if (e.key === 'Backspace' && !otp[idx] && idx > 0) document.getElementById(`otp-${idx-1}`)?.focus();
   };
 
+  const handlePaste = (e) => {
+    e.preventDefault();
+    // Get pasted data, strip non-digits, keep up to 6 characters
+    const txt = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!txt) return;
+    
+    const next = [...otp];
+    txt.split('').forEach((char, i) => next[i] = char);
+    setOtp(next);
+    
+    // Focus the next empty box or the last box
+    const focusIdx = Math.min(txt.length, 5);
+    document.getElementById(`otp-${focusIdx}`)?.focus();
+  };
+
   const handleSubmit = async e => {
     e.preventDefault(); setError(''); setLoading(true);
     try {
@@ -66,9 +81,9 @@ const VerifyEmail = () => {
 
         {/* Icon */}
         <div className="flex justify-center">
-          <div className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-lg"
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-lg"
             style={{ background: 'linear-gradient(135deg,#e8f5e9,#c8e6c9)', border: '2.5px solid #a5d6a7' }}>
-            <ShieldCheck size={34} style={{ color: '#2e7d32' }} />
+            <ShieldCheck className="w-8 h-8 sm:w-9 sm:h-9" style={{ color: '#2e7d32' }} />
           </div>
         </div>
 
@@ -81,13 +96,14 @@ const VerifyEmail = () => {
         {/* OTP boxes */}
         <div>
           <label className="block text-xs font-black uppercase tracking-wider mb-3 text-center" style={{ color: '#558b2f' }}>Enter OTP Code</label>
-          <div className="flex gap-2.5 justify-center">
+          <div className="flex gap-2 sm:gap-2.5 justify-center">
             {otp.map((digit, idx) => (
               <input key={idx} id={`otp-${idx}`}
                 type="text" inputMode="numeric" maxLength={1} value={digit}
-                onChange={e => handleChange(e.target.value, idx)}
+                onChange={e => handleChange(e.target.value.replace(/\D/g, ''), idx)}
                 onKeyDown={e => handleKeyDown(e, idx)}
-                className="w-12 h-14 text-center text-xl font-black rounded-2xl border-2 focus:outline-none transition-all"
+                onPaste={handlePaste}
+                className="w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-black rounded-xl sm:rounded-2xl border-2 focus:outline-none transition-all"
                 style={{
                   background: digit ? '#f0fdf4' : '#fff',
                   borderColor: digit ? '#4caf50' : '#e5e7eb',

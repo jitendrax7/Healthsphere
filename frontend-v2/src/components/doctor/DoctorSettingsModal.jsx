@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import {
-  Settings, Palette, Bell, Eye, Shield, X, Globe, Check,
-  Moon, Sun, Calendar, Lock, Monitor, MapPin, Crosshair, Loader2
+  Settings, Palette, Bell, Eye, EyeOff, Shield, X, Globe, Check,
+  Moon, Sun, Calendar, Lock, Monitor, MapPin, Crosshair, Loader2, LogOut
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import { userSettingsApi, authApi } from '../../api/axios';
+import { userSettingsApi, authApi, doctorApi } from '../../api/axios';
 
 const TABS = [
   { id: 'general',      label: 'General',            icon: Settings  },
@@ -34,7 +34,7 @@ const ToggleRow = ({ title, desc, value, onToggle, theme }) => (
 
 const DoctorSettingsModal = () => {
   const { t, i18n } = useTranslation();
-  const { theme, setTheme, user } = useApp();
+  const { theme, setTheme, user, logout } = useApp();
   const navigate = useNavigate();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -43,6 +43,27 @@ const DoctorSettingsModal = () => {
 
   const [activeTab, setActiveTab] = useState(initialTab);
   const [loading, setLoading] = useState(true);
+
+  // Account Tab - Password
+  const [pwdForm, setPwdForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [pwdLoad, setPwdLoad] = useState(false);
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    if (pwdForm.newPassword !== pwdForm.confirmPassword) { 
+      window.dispatchEvent(new CustomEvent('api-toast', { detail: { type: 'error', message: 'Passwords do not match.' } }));
+      return; 
+    }
+    setPwdLoad(true);
+    try {
+      await doctorApi.updateSettings({ password: pwdForm.newPassword, oldPassword: pwdForm.oldPassword });
+      setPwdForm({ oldPassword:'', newPassword:'', confirmPassword:'' });
+    } catch (_) {
+      // Global Interceptor handles API toast message rendering automatically.
+    } finally { setPwdLoad(false); }
+  };
 
   // General
   const [language, setLanguage] = useState(i18n.language || 'en');
@@ -380,26 +401,50 @@ const DoctorSettingsModal = () => {
 
                 <hr className={bdr} />
 
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className={`text-sm font-medium mb-0.5 ${text}`}>Change Password</h4>
-                      <p className={`text-xs md:text-[13px] ${sub}`}>Update your login password</p>
-                    </div>
-                    <button className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
-                      theme === 'light' ? 'border-gray-200 text-gray-700 hover:bg-gray-50' : 'border-white/10 text-white/80 hover:bg-white/5'
-                    }`}>Update</button>
+                <div className="space-y-4 pt-2">
+                  <div>
+                    <h4 className={`text-sm font-medium mb-4 ${text}`}>Change Password</h4>
+                    <form onSubmit={handlePasswordChange} className="space-y-4">
+                      {[
+                        { label:'Current Password', key:'oldPassword', show:showOld, toggle:() => setShowOld(!showOld) },
+                        { label:'New Password',     key:'newPassword', show:showNew, toggle:() => setShowNew(!showNew) },
+                        { label:'Confirm Password', key:'confirmPassword', show:showNew, toggle:() => {} },
+                      ].map(({ label, key, show, toggle }) => (
+                        <div key={key}>
+                          <label className={`block text-xs mb-1.5 ${sub}`}>{label}</label>
+                          <div className="relative">
+                            <Lock size={14} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${theme === 'light' ? 'text-gray-400' : 'text-white/30'}`} />
+                            <input type={show ? 'text' : 'password'} value={pwdForm[key]} onChange={e => setPwdForm({...pwdForm,[key]:e.target.value})}
+                              required placeholder="••••••••" className={`w-full pl-10 pr-10 py-2.5 rounded-xl text-sm border focus:outline-none focus:border-primary-500/50 transition-colors ${
+                                theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-800' : 'bg-dark-800/60 border-white/10 text-white'
+                              }`} />
+                            <button type="button" onClick={toggle} className={`absolute right-3.5 top-1/2 -translate-y-1/2 transition-colors ${theme === 'light' ? 'text-gray-400 hover:text-gray-600' : 'text-white/30 hover:text-white/60'}`}>
+                              {show ? <EyeOff size={14}/> : <Eye size={14}/>}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      <button type="submit" disabled={pwdLoad} className="mt-2 flex w-full md:w-auto items-center justify-center gap-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-sm font-semibold transition-all shadow-sm">
+                        {pwdLoad ? <Loader2 size={15} className="animate-spin"/> : null} Update Password
+                      </button>
+                    </form>
                   </div>
-                  <hr className={bdr} />
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className={`text-sm font-medium mb-0.5 ${text}`}>Active Sessions</h4>
-                      <p className={`text-xs md:text-[13px] ${sub}`}>Manage devices logged into your account</p>
+                </div>
+
+                {/* Account Session / Logout */}
+                <div className={`mt-6 p-5 sm:p-6 rounded-2xl border ${theme === 'light' ? 'bg-red-50 border-red-200' : 'bg-red-500/5 border-red-500/20'}`}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${theme === 'light' ? 'bg-red-100' : 'bg-red-500/10'}`}>
+                      <LogOut size={16} className={`text-red-500`} />
                     </div>
-                    <button className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
-                      theme === 'light' ? 'border-gray-200 text-gray-700 hover:bg-gray-50' : 'border-white/10 text-white/80 hover:bg-white/5'
-                    }`}>Manage</button>
+                    <h2 className={`font-semibold ${theme === 'light' ? 'text-red-700' : 'text-white'}`}>Account Session</h2>
                   </div>
+                  <p className={`text-sm mb-5 leading-relaxed ${theme === 'light' ? 'text-red-600/80' : 'text-white/50'}`}>
+                    Ready to leave? Clicking the button below will securely log you out of your current session on this device.
+                  </p>
+                  <button onClick={logout} className="flex items-center justify-center sm:justify-start w-full sm:w-auto gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20 transition-all shadow-glow-sm">
+                    <LogOut size={16}/> Log Out Securely
+                  </button>
                 </div>
               </div>
             )}

@@ -176,7 +176,7 @@ const DoctorProfile = () => {
       const next = !isBookingEnabled;
       const r = await doctorApi.toggleBooking(next);
       setIsBookingEnabled(r.data.bookingEnabled ?? next);
-    } catch (e) { /* ignore */ } finally { setBookingLoading(false); }
+    } catch (e) { /* error is handled globally */ } finally { setBookingLoading(false); }
   };
 
   /* ── Tag helpers ── */

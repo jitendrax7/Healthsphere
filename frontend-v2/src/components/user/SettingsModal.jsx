@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Settings, Bell, Palette, User, X, Check, Globe, Calendar, Leaf, Shield, ChevronRight } from 'lucide-react';
+import { Settings, Bell, Palette, User, X, Check, Globe, Calendar, Leaf, Shield, ChevronRight, LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
@@ -23,7 +23,7 @@ const Toggle = ({ value, onChange }) => (
 
 const SettingsModal = () => {
   const { t, i18n } = useTranslation();
-  const { theme, setTheme } = useApp();
+  const { theme, setTheme, logout } = useApp();
   const navigate = useNavigate();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -268,6 +268,22 @@ const SettingsModal = () => {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* Account Session / Logout */}
+                <div className="glass p-5 sm:p-6 rounded-2xl border border-red-500/10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center shrink-0">
+                      <LogOut size={16} className="text-red-400" />
+                    </div>
+                    <h2 className="font-semibold text-white">Account Session</h2>
+                  </div>
+                  <p className="text-white/50 text-sm mb-5 leading-relaxed">
+                    Ready to leave? Clicking the button below will securely log you out of your current session on this device.
+                  </p>
+                  <button onClick={logout} className="flex items-center justify-center sm:justify-start w-full sm:w-auto gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all shadow-glow-sm">
+                    <LogOut size={16}/> Log Out Securely
+                  </button>
                 </div>
               </div>
             )}

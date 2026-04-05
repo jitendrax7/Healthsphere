@@ -20,6 +20,7 @@ const ProfileHero = ({
   isBookingEnabled,
   handleBookingToggle,
   bookingLoading,
+  bookingMsg,
   profileDates,
   fmtDate
 }) => {
