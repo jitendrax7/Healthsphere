@@ -5,7 +5,7 @@ const diseaseRoutes = express.Router();
 
 // Diabetes
 diseaseRoutes.get("/diabetes-data", getDiabetesData);
-diseaseRoutes.post("/diabetes-predict", predictDiabetes);
+diseaseRoutes.post("/diabetes", predictDiabetes);
 
 // Heart
 diseaseRoutes.get("/heart-data", getHeartData);

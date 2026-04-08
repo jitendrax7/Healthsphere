@@ -74,35 +74,171 @@ export const getDiabetesData = async (req, res) => {
 ====================================================== */
 export const predictDiabetes = async (req, res) => {
   try {
-    const inputData = req.body;
 
+    const {
+      age,
+      hypertension,
+      heart_disease,
+      bmi,
+      HbA1c_level,
+      blood_glucose_level,
+      gender,
+      smoking_history
+    } = req.body;
+
+
+    // Required field validation
+    if(
+      age === undefined ||
+      hypertension === undefined ||
+      heart_disease === undefined ||
+      bmi === undefined ||
+      HbA1c_level === undefined ||
+      blood_glucose_level === undefined ||
+      !gender ||
+      !smoking_history
+    ){
+      return res.status(400).json({
+        message:"All fields are required"
+      });
+    }
+
+
+    // Type validation
+    if(isNaN(age) || age < 1 || age > 120){
+      return res.status(400).json({
+        message:"Invalid age"
+      });
+    }
+
+
+    if(![0,1].includes(Number(hypertension))){
+      return res.status(400).json({
+        message:"hypertension must be 0 or 1"
+      });
+    }
+
+
+    if(![0,1].includes(Number(heart_disease))){
+      return res.status(400).json({
+        message:"heart_disease must be 0 or 1"
+      });
+    }
+
+
+    if(isNaN(bmi) || bmi < 10 || bmi > 80){
+      return res.status(400).json({
+        message:"Invalid BMI"
+      });
+    }
+
+
+    if(isNaN(HbA1c_level) || HbA1c_level < 3 || HbA1c_level > 15){
+      return res.status(400).json({
+        message:"Invalid HbA1c level"
+      });
+    }
+
+
+    if(
+      isNaN(blood_glucose_level) ||
+      blood_glucose_level < 50 ||
+      blood_glucose_level > 400
+    ){
+      return res.status(400).json({
+        message:"Invalid glucose level"
+      });
+    }
+
+
+    // Gender validation
+    const validGender = ["male","female"];
+
+    if(!validGender.includes(gender.toLowerCase())){
+      return res.status(400).json({
+        message:"gender must be male or female"
+      });
+    }
+
+
+    // Smoking validation
+    const validSmoking = [
+      "current",
+      "ever",
+      "former",
+      "never",
+      "not_current"
+    ];
+
+    if(!validSmoking.includes(smoking_history.toLowerCase())){
+      return res.status(400).json({
+        message:"Invalid smoking history"
+      });
+    }
+
+
+
+    // Clean payload sent to Flask
+    const inputData = {
+      age:Number(age),
+      hypertension:Number(hypertension),
+      heart_disease:Number(heart_disease),
+      bmi:Number(bmi),
+      HbA1c_level:Number(HbA1c_level),
+      blood_glucose_level:Number(blood_glucose_level),
+      gender:gender.toLowerCase(),
+      smoking_history:smoking_history.toLowerCase()
+    };
+
+
+
+    // Call ML API
     const response = await axios.post(
       "http://localhost:5001/diabetes_prediction",
       inputData
     );
-    console.log("Diabetes prediction response:", response.data);
+
+  //  console.log(response);
+   
     const result = response.data;
 
+
+    // Save history
     const history = await savePredictionHistory({
-      userId: req.user._id,
-      diseaseType: "Diabetes",
-      prediction: result.prediction,
-      probability: result.probability,
+      userId:req.user._id,
+      diseaseType:"Diabetes",
+      prediction:result.prediction,
+      probability:result.probability,
       inputData
     });
-   
-    console.log(history);
-    
+
+
+
     res.status(200).json({
-      message: "Prediction successful",
-      data: history
+      message:"Prediction successful",
+      prediction:result.prediction,
+      risk:result.risk_level,
+      probability:result.probability,
+      data:history
     });
 
+
+
   } catch (error) {
+    // Flask error handling
+    if(error.response){
+      return res.status(400).json({
+        message:"Prediction failed",
+        error:error.response.data
+      });
+    }
+
+
     res.status(500).json({
-      message: "Prediction failed",
-      error: error.message
+      message:"Server error",
+      error:error.message
     });
+
   }
 };
 
