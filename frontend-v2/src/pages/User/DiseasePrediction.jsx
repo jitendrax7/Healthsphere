@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Brain, Droplets, Heart, ArrowLeft, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { diseaseApi } from '../../api/axios';
 import HeartPredictionWizard from '../../components/user/HeartPredictionWizard';
+import DiabetesPredictionWizard from '../../components/user/DiabetesPredictionWizard';
 import DiseaseCard from '../../components/user/disease/DiseaseCard';
-import DiseaseForm from '../../components/user/disease/DiseaseForm';
 import SkinForm from '../../components/user/disease/SkinForm';
 
 const DISEASE_CARDS = [
@@ -15,7 +15,6 @@ const DISEASE_CARDS = [
 const DiseasePrediction = () => {
   const [tab, setTab]             = useState('predict');
   const [disease, setDisease]     = useState(null);
-  const [gender, setGender]       = useState(null);
   const [history, setHistory]     = useState([]);
   const [histLoading, setHLoading]= useState(false);
 
@@ -29,7 +28,7 @@ const DiseasePrediction = () => {
     }
   }, [tab]);
 
-  const reset = () => { setDisease(null); setGender(null); };
+  const reset = () => { setDisease(null); };
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -51,7 +50,7 @@ const DiseasePrediction = () => {
 
       {tab === 'predict' && (
         <div className="space-y-5">
-          {(disease || gender) && (
+          {(disease) && (
             <button onClick={reset} className="flex items-center gap-2 text-primary-400 hover:text-primary-300 text-sm font-medium transition-colors">
               <ArrowLeft size={16} /> Back to Selection
             </button>
@@ -65,23 +64,8 @@ const DiseasePrediction = () => {
             </div>
           )}
 
-          {disease === 'diabetes' && !gender && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">Select Gender for Diabetes Prediction</h3>
-              <div className="grid grid-cols-2 gap-4 max-w-xs sm:max-w-sm">
-                {['Male', 'Female'].map(g => (
-                  <button key={g} onClick={() => setGender(g.toLowerCase())}
-                    className="glass p-5 sm:p-6 rounded-xl text-center hover:border-primary-500/40 transition-all">
-                    <p className="text-2xl mb-2">{g === 'Male' ? '👨' : '👩'}</p>
-                    <p className="font-semibold text-white">{g}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {disease === 'heart'    && <HeartPredictionWizard onComplete={() => { setTab('history'); reset(); }} />}
-          {disease === 'diabetes' && gender && <DiseaseForm type="diabetes" gender={gender} />}
+          {disease === 'diabetes' && <DiabetesPredictionWizard onComplete={() => { setTab('history'); reset(); }} />}
           {disease === 'skin'     && <SkinForm />}
         </div>
       )}
