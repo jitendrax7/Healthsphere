@@ -145,7 +145,7 @@ export const registerForCamp = async (req, res) => {
 
     // ── 1. Camp must exist & be published ──────────────────────────────────
     if (!camp) {
-      return res.status(404).json({
+      return res.json({
         success: false,
         message: "Camp not found or is no longer available.",
       });
