@@ -18,6 +18,7 @@ const CampDetails = () => {
   
   const [registering, setRegistering] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [regError, setRegError] = useState('');
 
   useEffect(() => {
     const fetchCamp = async () => {
@@ -36,7 +37,8 @@ const CampDetails = () => {
         } catch(e) {}
 
         setCamp(fetchedCamp);
-        // For now, if the API does not, we initialize generic boolean.
+        // Seed registered state from backend
+        if (fetchedCamp.isRegistered) setIsRegistered(true);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to locate camp details.');
       } finally {
@@ -48,11 +50,20 @@ const CampDetails = () => {
 
   const handleRegister = async () => {
     setRegistering(true);
+    setRegError('');
     try {
       await campApi.register(id);
       setIsRegistered(true);
+      // Bump the local count so the progress bar updates without a refetch
+      setCamp(prev => prev ? { ...prev, totalRegistrations: (prev.totalRegistrations || 0) + 1 } : prev);
     } catch (err) {
-      alert(err.response?.data?.message || 'Registration failed');
+      const msg = err.response?.data?.message || 'Registration failed. Please try again.';
+      // 409 = already registered — just flip the flag silently
+      if (err.response?.status === 409) {
+        setIsRegistered(true);
+      } else {
+        setRegError(msg);
+      }
     } finally {
       setRegistering(false);
     }
@@ -278,6 +289,14 @@ const CampDetails = () => {
                </button>
              )}
              
+             {/* Inline error message */}
+             {regError && (
+               <div className="mt-3 flex items-start gap-2 bg-red-500/10 border border-red-500/20 rounded-xl p-3">
+                 <Info size={14} className="text-red-400 mt-0.5 shrink-0" />
+                 <p className="text-xs text-red-400">{regError}</p>
+               </div>
+             )}
+
              {(camp.hospital?.contactNumber || camp.contactNumber) && (
                <p className="text-center text-xs text-white/40 mt-4 flex items-center justify-center gap-1.5">
                   <Phone size={12} /> Contact Organizer: {camp.hospital?.contactNumber || camp.contactNumber}
