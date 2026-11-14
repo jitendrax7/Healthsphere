@@ -1,32 +1,35 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-});
-
-// console.log("Email transporter configured with user:", process.env.EMAIL_USER);
-
+/**
+ * Sends an email via Resend API.
+ * Drop-in replacement for the previous nodemailer-based sendEmail util.
+ *
+ * @param {string} email      - Recipient email address
+ * @param {string} subject    - Email subject line
+ * @param {string} html       - HTML body of the email
+ * @returns {Promise<boolean>} - true on success, false on failure
+ */
 const sendEmail = async (email, subject, html) => {
-
   try {
-    await transporter.sendMail({
-      from: `HealthSphere <${process.env.EMAIL_USER}>`,
+    const { error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM,
       to: email,
       subject,
-      html  
+      html,
     });
+
+    if (error) {
+      console.error("Resend API Error:", error);
+      return false;
+    }
 
     return true;
   } catch (error) {
-    console.log("Email error:", error);
+    console.error("SendEmail Error:", error);
     return false;
   }
 };
 
 export default sendEmail;
-
