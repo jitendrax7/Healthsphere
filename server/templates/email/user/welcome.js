@@ -89,7 +89,7 @@ const welcomeTemplate = (data) => {
               <table role="presentation" align="center" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
                 <tr>
                   <td style="border-radius:50px;background:linear-gradient(135deg,#2e7d32,#43a047);">
-                    <a href="http://localhost:3000" target="_blank"
+                    <a href="https://www.healthsphere.me" target="_blank"
                        style="display:inline-block;padding:14px 40px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:50px;letter-spacing:0.3px;">
                       Go to Dashboard &rarr;
                     </a>
