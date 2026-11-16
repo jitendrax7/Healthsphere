@@ -268,6 +268,57 @@ export const loginUser = async (req, res) => {
       });
     }
 
+    // --- Extract login metadata for security alert ---
+    const rawIp =
+      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+      req.socket?.remoteAddress ||
+      "Unknown";
+
+    const userAgent = req.headers["user-agent"] || "";
+
+    // Simple UA parsing (no extra dependency needed)
+    const getBrowser = (ua) => {
+      if (/Edg\//i.test(ua)) return "Microsoft Edge";
+      if (/OPR\//i.test(ua) || /Opera/i.test(ua)) return "Opera";
+      if (/Chrome\//i.test(ua)) return "Google Chrome";
+      if (/Firefox\//i.test(ua)) return "Mozilla Firefox";
+      if (/Safari\//i.test(ua)) return "Apple Safari";
+      if (/MSIE|Trident/i.test(ua)) return "Internet Explorer";
+      return "Unknown Browser";
+    };
+
+    const getOS = (ua) => {
+      if (/Windows NT 10/i.test(ua)) return "Windows 10/11";
+      if (/Windows NT/i.test(ua)) return "Windows";
+      if (/Mac OS X/i.test(ua)) return "macOS";
+      if (/Android/i.test(ua)) return "Android";
+      if (/iPhone|iPad/i.test(ua)) return "iOS";
+      if (/Linux/i.test(ua)) return "Linux";
+      return "Unknown OS";
+    };
+
+    const getDevice = (ua) => {
+      if (/iPhone/i.test(ua)) return "iPhone";
+      if (/iPad/i.test(ua)) return "iPad";
+      if (/Android.*Mobile/i.test(ua)) return "Android Phone";
+      if (/Android/i.test(ua)) return "Android Tablet";
+      if (/Macintosh/i.test(ua)) return "Mac";
+      if (/Windows/i.test(ua)) return "Windows PC";
+      if (/Linux/i.test(ua)) return "Linux PC";
+      return "Unknown Device";
+    };
+
+    const loginTime = new Date().toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    }) + " IST";
+
     res.status(200).json({
       "otp_sent": false,
       message: "Login successful",
@@ -279,6 +330,18 @@ export const loginUser = async (req, res) => {
         role: user.role
       }
     });
+
+    // Fire-and-forget: send login security alert email (after response)
+    sendUserEmail("LOGIN_ALERT", {
+      email: user.email,
+      name: user.Name,
+      ip: rawIp,
+      device: getDevice(userAgent),
+      browser: getBrowser(userAgent),
+      os: getOS(userAgent),
+      location: "Location lookup not configured",
+      time: loginTime
+    }).catch((err) => console.error("Login alert email failed:", err));
 
   } catch (error) {
     res.status(500).json({

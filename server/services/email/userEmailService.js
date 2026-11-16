@@ -2,12 +2,14 @@ import sendEmail from "../../utils/sendEmail.js";
 
 import welcomeTemplate from "../../templates/email/user/welcome.js";
 import otpTemplate from "../../templates/email/user/otp.js";
+import loginAlertTemplate from "../../templates/email/user/loginAlert.js";
 
 
 
  const templateMap = {
         WELCOME: welcomeTemplate,
-        OTP: otpTemplate
+        OTP: otpTemplate,
+        LOGIN_ALERT: loginAlertTemplate
     };
 
 export const sendUserEmail = async (purpose, data) => {
